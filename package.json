@@ -29,6 +29,7 @@
     "@turf/turf": "^7.3.1",
     "@tweenjs/tween.js": "^25.0.0",
     "@types/geojson": "^7946.0.16",
-    "svelte": "^5.46.0"
+    "svelte": "^5.46.0",
+    "three": "^0.182.0"
   }
 }

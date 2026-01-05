@@ -1,9 +1,8 @@
 <script lang="ts">
-  import { buffer } from '@turf/turf';
   import Maplibre from '../Maplibre/Maplibre.svelte';
   import type { FeatureCollection, Geometry } from 'geojson';
-  import { createContinuousScale, SequentialPalette } from '@abcnews/palette';
   import { onMount } from 'svelte';
+  import SpikeLayer from './SpikeLayer';
   type MyFeatureCollection = FeatureCollection<
     Geometry,
     {
@@ -41,40 +40,11 @@
   });
 
   let index = 0;
-  $effect(() => {});
 </script>
 
 <div class="app">
   <Maplibre
     onLoad={async ({ rootNode, maplibregl }) => {
-      await loadingPromise;
-
-      if (process.env.NODE_ENV === 'development') {
-      }
-
-      const palette = SequentialPalette.Blue;
-      const domain: [number, number] = [35, 0];
-      const scale = createContinuousScale(palette, 'l', domain);
-
-      geojson.features = geojson.features
-        .map(feature => {
-          const circleFeature = buffer(feature, 10, { units: 'kilometers' }) as MyFeatureCollection['features'][0];
-          const series = data.series[feature.properties.auroraId];
-
-          const temp = series?.[3] || null;
-          console.log(feature.properties.name, !!series, temp, scale(temp));
-          // Preserve properties and apply new ones
-          circleFeature.properties = {
-            ...feature.properties,
-            height: 10000 * (temp || 1),
-            colour: scale(temp),
-            temp
-          };
-
-          return circleFeature;
-        })
-        .filter(feature => feature.properties.temp);
-
       const map = new maplibregl.Map({
         zoom: 1,
         minZoom: 2,
@@ -95,23 +65,25 @@
         type: 'globe' // Set projection to globe
       });
 
-      map.addSource('extrude-polygons', {
-        type: 'geojson',
-        data: geojson
-      });
-
-      map.addLayer({
-        id: 'extrude-polygon-layer',
-        source: 'extrude-polygons',
-        type: 'fill-extrusion',
-        paint: {
-          'fill-extrusion-color': ['get', 'colour'],
-          'fill-extrusion-opacity': 1,
-          'fill-extrusion-height': ['get', 'height']
-        }
-      });
-
-      function updateData() {}
+      const coneGeoJson = {
+        ...geojson,
+        features: (geojson.features = geojson.features
+          .map(feature => {
+            const series = data.series[feature.properties.auroraId];
+            const temp = series?.[3] || 0;
+            const fraction = temp ? Math.min(1, Math.max(0, (temp - 10) / 35)) : 0;
+            feature.properties = {
+              ...feature.properties,
+              height: 3000000 * fraction,
+              colour: `rgb(${Math.round(fraction * 255)}, 0, ${Math.round((1 - fraction) * 255)})`,
+              temp
+            };
+            return feature;
+          })
+          .filter(feature => feature.properties.temp))
+      };
+      map.addLayer(new SpikeLayer({ id: 'hi', geojson: coneGeoJson, baseDiameter: 20000 }));
+      console.log('added cone layer');
     }}
   />
 </div>
