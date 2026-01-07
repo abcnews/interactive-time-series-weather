@@ -12,7 +12,7 @@ export function setTransparent() {
     if (frame) {
       frame.style.colorScheme = 'light';
     }
-  } catch (e) {
+  } catch (e: any) {
     console.warn('Interactive: Could not set dark mode on iframe. This only works in prod/same domain.', e.message);
   }
 }
