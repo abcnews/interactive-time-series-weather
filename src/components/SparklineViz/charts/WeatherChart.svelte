@@ -72,8 +72,6 @@
     const time = formatTime(d);
     return time ? `${value} ${time}` : value;
   }
-
-  $effect(() => console.log({ minValue, midValue, maxValue }));
 </script>
 
 <div class="weather-chart">

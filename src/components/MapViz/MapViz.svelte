@@ -29,7 +29,6 @@
 
     // 2. Data Update Function: Convert your logic to Typed Arrays
     function refreshSpikes(index) {
-      console.log('refershing', index);
       const count = featuresWithData.length;
       const heights = new Float32Array(count);
       const colours = new Float32Array(count * 3); // 3 values (R, G, B) per spike
