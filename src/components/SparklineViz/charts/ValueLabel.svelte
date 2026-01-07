@@ -1,0 +1,74 @@
+<script lang="ts">
+  /**
+   * @file Displays a value label positioned at a data point location.
+   *
+   * A dumb component that displays formatted values at specified positions.
+   * Can be shown above or below the data point, optionally highlighted, and can display time information.
+   */
+
+  import { getContext } from 'svelte';
+
+  interface Props {
+    data: any;
+    value: string; // Formatted value string (e.g., "25km/h")
+    timeDisplay?: string; // Optional formatted time string
+    alignment?: 'above' | 'below';
+    showTime?: boolean;
+    highlight?: boolean;
+  }
+
+  let { data, value, timeDisplay, alignment = 'above', showTime = false, highlight = false }: Props = $props();
+
+  let width = $state(0);
+  const { xGet, yGet, width: chartWidth } = getContext<any>('LayerCake');
+</script>
+
+<div
+  bind:clientWidth={width}
+  style:left="{Math.min($chartWidth - width / 2, Math.max($xGet(data), width / 2))}px"
+  class:below={alignment === 'below'}
+  class:tooltip={showTime}
+  class:highlight
+  style:top="{$yGet(data)}px"
+>
+  {value}
+  {#if showTime && timeDisplay}
+    <time>{timeDisplay}</time>
+  {/if}
+</div>
+
+<style>
+  div {
+    position: absolute;
+    font-weight: bold;
+    color: #000;
+    font-size: 0.875rem;
+    transform: translate(-50%, calc(-100% - 10px));
+    text-align: center;
+    line-height: 1.1;
+    text-shadow:
+      -1px -1px 0 white,
+      1px -1px 0 white,
+      -1px 1px 0 white,
+      1px 1px 0 white;
+  }
+
+  .highlight {
+    font-size: 1rem;
+  }
+
+  .tooltip {
+    background: rgb(255, 255, 255, 0.8);
+    padding: 3px;
+    border-radius: 2px;
+  }
+
+  .below {
+    transform: translate(-50%, 10px);
+  }
+
+  time {
+    display: block;
+    margin: 0;
+  }
+</style>

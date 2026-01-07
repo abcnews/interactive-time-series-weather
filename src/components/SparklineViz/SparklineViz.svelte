@@ -1,12 +1,18 @@
 <script lang="ts">
-  import Chart from 'chart.js/auto';
   import { onMount } from 'svelte';
   import type { LocationsFeatureCollection, TimeSeriesData } from '../../types';
-  import { DATA_URL } from '../util';
-  import LineChart from './LineChart/LineChart.svelte';
+  import { DATA_URL, emitResize } from '../util';
+  import WeatherChart from './charts/WeatherChart.svelte';
+  import { setGradientScale } from './charts/lib/stores';
   let geojson = $state<LocationsFeatureCollection>();
   let data = $state<TimeSeriesData>();
-  let rootEl = $state<HTMLCanvasElement>();
+  let clientHeight = $state(0);
+
+  $effect(() => {
+    if (clientHeight) {
+      emitResize(window.innerHeight);
+    }
+  });
 
   onMount(async () => {
     const [loadedGeojson, loadedData] = await Promise.all([
@@ -22,7 +28,7 @@
     'Coober Pedy', // SA
     'Adelaide', // SA
     'Mildura', // VIC
-    'Echuca', // VIC
+    // 'Echuca', // VIC
     'Melbourne', // VIC
     'Bendigo', // VIC
     'Broken Hill', // NSW
@@ -30,37 +36,44 @@
     'Canberra', // ACT
     'Hobart', // TAS
     'Launceston' // TAS
-  ];
 
-  let labels = $derived.by(() => {
-    return (data?.timestamps || []).map((ts: string | number) => {
-      return new Date(ts).toLocaleDateString('en-AU', {
-        day: '2-digit',
-        month: '2-digit'
-      });
-    });
-  });
+    // 'Brisbane',
+    // 'Sydney',
+    // 'Melbourne',
+    // 'Adelaide'
+  ];
 
   let foundLocations = $derived.by(() => {
     if (!geojson || !data) {
       return [];
     }
-    return geojson.features
+
+    return locations
+      .map(location => geojson.features.find(feature => feature.properties.name === location))
+      .filter(feature => typeof feature !== 'undefined')
       .filter(feature => locations.includes(feature.properties.name))
       .map(feature => {
         const auroraId = feature.properties.auroraId;
 
-        const chartData = data.series[auroraId].reduce((acc: number[], val: number | null) => {
-          if (val !== null) {
-            acc.push(val);
-          } else {
-            const previousValue = acc.length > 0 ? acc[acc.length - 1] : 0;
-            acc.push(previousValue);
+        // Transform data into LayerCake-compatible format
+        // Fill null values with the previous non-null value
+        const timeSeries = data!.series[auroraId];
+        let previousValue;
+        const chartData = timeSeries.reduce((acc: Array<{ x: number; y: number }>, val, index) => {
+          previousValue = val ?? previousValue ?? 0;
+          const timestamp = new Date(data!.timestamps[index]);
+          if (Number(timestamp) < Date.now() - 1000 * 60 * 60 * 24 * 5) {
+            return acc;
           }
+          if (val) {
+            acc.push({
+              x: timestamp.getTime(),
+              y: val
+            });
+          }
+
           return acc;
         }, []);
-
-        console.log(feature.properties.name, data.series[auroraId]);
 
         return {
           name: feature.properties.name,
@@ -68,12 +81,35 @@
         };
       });
   });
+
+  // Calculate global min and max values across all locations for shared y-axis
+  let { globalMin, globalMax } = $derived.by(() => {
+    if (foundLocations.length === 0) {
+      return { min: 0, max: 0 };
+    }
+
+    const allYValues = foundLocations.flatMap(location => location.chartData.map(d => d.y));
+
+    const globalMin = Math.min(...allYValues);
+    const globalMax = Math.max(...allYValues);
+
+    setGradientScale(globalMin, globalMax);
+
+    return {
+      globalMin,
+      globalMax
+    };
+  });
 </script>
 
-<div class="app">
+<div class="app" bind:clientHeight>
   {#each foundLocations as location}
-    <h2>{location.name}</h2>
-    <LineChart {labels} data={location.chartData} />
+    <WeatherChart
+      name={location.name}
+      data={location.chartData}
+      formatValue={v => `${v.toFixed(1)}°C`}
+      yDomain={[globalMin, globalMax]}
+    />
   {/each}
 </div>
 

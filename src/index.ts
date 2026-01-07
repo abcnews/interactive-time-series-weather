@@ -4,6 +4,8 @@ import { getMountValue, selectMounts } from '@abcnews/mount-utils';
 import MapViz from './components/MapViz/MapViz.svelte';
 import { mount } from 'svelte';
 import SparklineViz from './components/SparklineViz/SparklineViz.svelte';
+import { setTransparent } from './components/util';
+setTransparent();
 
 whenDOMReady.then(() => {
   const [mapMountEl] = selectMounts('interactivetimeseriesweathermap');
