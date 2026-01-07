@@ -1,50 +1,50 @@
 {
-  "name": "interactive-time-series-weather-map",
-  "version": "1.0.0-pre",
-  "description": "Show weather data on a MapLibre spike map.",
-  "license": "MIT",
-  "private": true,
-  "contributors": [
-    "Ash Kyd <kyd.ashley@abc.net.au>"
-  ],
-  "aunty": {
-    "type": "svelte",
-    "build": {
-      "includedDependencies": [
-        "layercake"
-      ],
-      "entry": [
-        "index"
-      ]
-    }
-  },
-  "scripts": {
-    "start": "aunty serve",
-    "dev": "aunty serve",
-    "test": "aunty test"
-  },
-  "devDependencies": {
-    "@abcnews/aunty": "^16.0.1",
-    "@testing-library/svelte": "^5.2.9",
-    "@types/jest": "^30.0.0",
-    "@types/webpack-env": "^1.18.8"
-  },
-  "dependencies": {
-    "@abcnews/alternating-case-to-object": "^3.2.0",
-    "@abcnews/env-utils": "^6.0.0",
-    "@abcnews/mount-utils": "^3.0.0",
-    "@abcnews/palette": "^0.0.1",
-    "@turf/turf": "^7.3.1",
-    "@tweenjs/tween.js": "^25.0.0",
-    "@types/geojson": "^7946.0.16",
-    "d3-color": "^3.1.0",
-    "d3-interpolate": "^3.0.1",
-    "d3-scale": "^4.0.2",
-    "d3-shape": "^3.2.0",
-    "d3-time-format": "^4.1.0",
-    "layercake": "^8.4.2",
-    "svelte": "^5.46.0",
-    "three": "^0.182.0",
-    "valibot": "^1.2.0"
-  }
+	"name": "interactive-time-series-weather-map",
+	"version": "1.0.0",
+	"description": "Show weather data on a MapLibre spike map.",
+	"license": "MIT",
+	"private": true,
+	"contributors": [
+		"Ash Kyd <kyd.ashley@abc.net.au>"
+	],
+	"aunty": {
+		"type": "svelte",
+		"build": {
+			"includedDependencies": [
+				"layercake"
+			],
+			"entry": [
+				"index"
+			]
+		}
+	},
+	"scripts": {
+		"start": "aunty serve",
+		"dev": "aunty serve",
+		"test": "aunty test"
+	},
+	"devDependencies": {
+		"@abcnews/aunty": "^16.0.1",
+		"@testing-library/svelte": "^5.2.9",
+		"@types/jest": "^30.0.0",
+		"@types/webpack-env": "^1.18.8"
+	},
+	"dependencies": {
+		"@abcnews/alternating-case-to-object": "^3.2.0",
+		"@abcnews/env-utils": "^6.0.0",
+		"@abcnews/mount-utils": "^3.0.0",
+		"@abcnews/palette": "^0.0.1",
+		"@turf/turf": "^7.3.1",
+		"@tweenjs/tween.js": "^25.0.0",
+		"@types/geojson": "^7946.0.16",
+		"d3-color": "^3.1.0",
+		"d3-interpolate": "^3.0.1",
+		"d3-scale": "^4.0.2",
+		"d3-shape": "^3.2.0",
+		"d3-time-format": "^4.1.0",
+		"layercake": "^8.4.2",
+		"svelte": "^5.46.0",
+		"three": "^0.182.0",
+		"valibot": "^1.2.0"
+	}
 }
