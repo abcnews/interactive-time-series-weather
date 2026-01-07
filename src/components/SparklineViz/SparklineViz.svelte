@@ -4,6 +4,7 @@
   import { DATA_URL, emitResize, LOCATIONS_URL } from '../util';
   import WeatherChart from './charts/WeatherChart.svelte';
   import { setGradientScale } from './charts/lib/stores';
+  let { locations = ['Brisbane', 'Sydney', 'Melbourne', 'Adelaide'] } = $props();
   let geojson = $state<LocationsFeatureCollection>();
   let data = $state<TimeSeriesData>();
   let clientHeight = $state(0);
@@ -23,26 +24,6 @@
     data = loadedData;
   });
 
-  const locations = [
-    'Port Augusta', // SA
-    'Coober Pedy', // SA
-    'Adelaide', // SA
-    'Mildura', // VIC
-    // 'Echuca', // VIC
-    'Melbourne', // VIC
-    'Bendigo', // VIC
-    'Broken Hill', // NSW
-    'Sydney', // NSW
-    'Canberra', // ACT
-    'Hobart', // TAS
-    'Launceston' // TAS
-
-    // 'Brisbane',
-    // 'Sydney',
-    // 'Melbourne',
-    // 'Adelaide'
-  ];
-
   let foundLocations = $derived.by(() => {
     if (!geojson || !data) {
       return [];
@@ -58,6 +39,7 @@
         // Transform data into LayerCake-compatible format
         // Fill null values with the previous non-null value
         const timeSeries = data!.series[auroraId];
+        let previousNulls = 0;
         let previousValue;
         const chartData = timeSeries.reduce((acc: Array<{ x: number; y: number }>, val, index) => {
           previousValue = val ?? previousValue ?? 0;
@@ -65,12 +47,14 @@
           if (Number(timestamp) < Date.now() - 1000 * 60 * 60 * 24 * 5) {
             return acc;
           }
-          if (val) {
-            acc.push({
-              x: timestamp.getTime(),
-              y: val
-            });
-          }
+          const hasVal = val !== null;
+          previousNulls = hasVal ? 0 : previousNulls + 1;
+          console.log(val, previousNulls);
+
+          acc.push({
+            x: timestamp.getTime(),
+            y: hasVal ? val : previousNulls < 10 ? previousValue : 0
+          });
 
           return acc;
         }, []);
@@ -83,23 +67,27 @@
   });
 
   // Calculate global min and max values across all locations for shared y-axis
-  let { globalMin = 0, globalMax = 0 } = $derived.by(() => {
-    if (foundLocations.length === 0) {
-      return { min: 0, max: 0 };
-    }
+  // let { globalMin = 0, globalMax = 0 } = $derived.by(() => {
+  //   if (foundLocations.length === 0) {
+  //     return { min: 0, max: 0 };
+  //   }
 
-    const allYValues = foundLocations.flatMap(location => location.chartData.map(d => d.y));
+  //   const allYValues = foundLocations.flatMap(location => location.chartData.map(d => d.y));
 
-    const globalMin = Math.min(...allYValues);
-    const globalMax = Math.max(...allYValues);
+  //   let globalMin = Math.min(...allYValues);
+  //   let globalMax = Math.max(...allYValues);
 
-    setGradientScale(globalMin, globalMax);
+  //   return {
+  //     globalMin,
+  //     globalMax
+  //   };
+  // });
 
-    return {
-      globalMin,
-      globalMax
-    };
-  });
+  // Hard-code these for now so they're consistent across multiple frames.
+  const [globalMin, globalMax] = [10, 55];
+  setGradientScale(globalMin, globalMax);
+
+  $effect(() => console.log({ globalMin, globalMax }));
 </script>
 
 <div class="app" bind:clientHeight>
@@ -114,7 +102,7 @@
       />
     {/each}
     <div>
-      <p class="attribution">Times shown in user's local time. Source: Metraweather.</p>
+      <p class="attribution">Times shown in user's local time. Source: Bureau of Meteorology.</p>
     </div>
   {/if}
 </div>
