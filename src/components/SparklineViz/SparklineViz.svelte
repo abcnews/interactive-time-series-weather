@@ -92,15 +92,17 @@
 
 <div class="app" bind:clientHeight>
   {#if foundLocations.length}
-    {#each foundLocations as location}
-      <WeatherChart
-        name={location.name}
-        altText={`A chart shows temperatures at ${location.name}`}
-        data={location.chartData}
-        formatValue={v => `${v.toFixed(1)}°C`}
-        yDomain={[globalMin, globalMax]}
-      />
-    {/each}
+    <div class="charts">
+      {#each foundLocations as location}
+        <WeatherChart
+          name={location.name}
+          altText={`A chart shows temperatures at ${location.name}`}
+          data={location.chartData}
+          formatValue={v => `${v.toFixed(1)}°C`}
+          yDomain={[globalMin, globalMax]}
+        />
+      {/each}
+    </div>
     <div>
       <p class="attribution">Times shown in user's local time. Source: Bureau of Meteorology.</p>
     </div>
@@ -119,9 +121,12 @@
   }
   .app {
     overflow: hidden;
+  }
+  .charts {
     display: flex;
     flex-direction: column;
     gap: 50px;
+    margin-bottom: 20px;
   }
 
   .attribution {

@@ -21,10 +21,12 @@ whenDOMReady.then(() => {
   const [sparklineMountEl] = selectMounts('interactivetimeseriesweathersparkline');
 
   if (sparklineMountEl) {
-    const appProps = acto(getMountValue(sparklineMountEl));
+    const params = new URLSearchParams(location.search);
+    const locationParams = params.get('locations') || 'Brisbane,Sydney,Melbourne,Adelaide';
+    const locations = locationParams.split(',');
     mount(SparklineViz, {
       target: sparklineMountEl,
-      props: appProps
+      props: { locations }
     });
   }
 });
