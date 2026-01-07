@@ -44,8 +44,8 @@
     color: #000;
     font-size: 0.875rem;
     transform: translate(-50%, calc(-100% - 10px));
-    text-align: center;
     line-height: 1.1;
+    white-space: nowrap;
     text-shadow:
       -1px -1px 0 white,
       1px -1px 0 white,
@@ -58,7 +58,8 @@
   }
 
   .tooltip {
-    background: rgb(255, 255, 255, 0.8);
+    text-align: center;
+    background: white;
     padding: 3px;
     border-radius: 2px;
   }

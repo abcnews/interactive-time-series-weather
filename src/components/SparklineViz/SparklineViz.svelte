@@ -10,7 +10,7 @@
 
   $effect(() => {
     if (clientHeight) {
-      emitResize(window.innerHeight);
+      emitResize(clientHeight);
     }
   });
 
@@ -83,7 +83,7 @@
   });
 
   // Calculate global min and max values across all locations for shared y-axis
-  let { globalMin, globalMax } = $derived.by(() => {
+  let { globalMin = 0, globalMax = 0 } = $derived.by(() => {
     if (foundLocations.length === 0) {
       return { min: 0, max: 0 };
     }
@@ -106,6 +106,7 @@
   {#each foundLocations as location}
     <WeatherChart
       name={location.name}
+      altText={`A chart shows temperatures at ${location.name}`}
       data={location.chartData}
       formatValue={v => `${v.toFixed(1)}°C`}
       yDomain={[globalMin, globalMax]}
@@ -119,5 +120,14 @@
       margin: 0;
       padding: 0;
     }
+    body {
+      background: transparent;
+    }
+  }
+  .app {
+    overflow: hidden;
+    display: flex;
+    flex-direction: column;
+    gap: 50px;
   }
 </style>

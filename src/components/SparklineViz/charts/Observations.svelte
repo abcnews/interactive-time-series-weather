@@ -6,6 +6,7 @@
    */
 
   import Observation from './Observation.svelte';
+  import AccessibleHide from '../../AccessibleHide/AccessibleHide.svelte';
 
   interface Props {
     data: any[];
@@ -16,7 +17,19 @@
   }
 
   let { data, formatAriaLabel, onenter, onleave, hitboxWidth }: Props = $props();
+
+  // Calculate min, max, and current values
+  let minPoint = $derived(data.length > 0 ? data.reduce((min, d) => (d.y < min.y ? d : min), data[0]) : null);
+  let maxPoint = $derived(data.length > 0 ? data.reduce((max, d) => (d.y > max.y ? d : max), data[0]) : null);
 </script>
+
+<AccessibleHide>
+  {#if minPoint && maxPoint}
+    <p>
+      Minimum: {formatAriaLabel(minPoint)}. Maximum: {formatAriaLabel(maxPoint)}.
+    </p>
+  {/if}
+</AccessibleHide>
 
 <ol>
   {#each data.slice().reverse() as observation}

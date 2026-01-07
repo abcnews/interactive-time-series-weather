@@ -23,6 +23,8 @@
   interface Props {
     /** The chart title displayed above the visualization */
     name: string;
+    /** Accessible description of the chart for screen readers */
+    altText: string;
     /** Time series data points to visualize */
     data: DataPoint[];
     /** Formats y values for display in labels and tooltips. Defaults to plain number display */
@@ -35,6 +37,7 @@
 
   let {
     name,
+    altText,
     data,
     formatValue = (v: number) => `${v}`,
     formatTime = (d: DataPoint) => {
@@ -76,7 +79,7 @@
 
 <div class="weather-chart">
   <h2>{name}</h2>
-  <div role="figure" class="chart" aria-label="A line chart showing {name}">
+  <div role="figure" class="chart" aria-label={altText}>
     <LayerCake
       {data}
       {padding}
@@ -141,16 +144,16 @@
     font-family: ABCSans;
     position: relative;
     z-index: 2;
-    margin-top: 50px;
   }
   h2 {
     display: inline-block;
-    margin: 10px 0 0;
-    padding: 2px 0;
+    margin: 0;
+    padding: 2px 0.75rem;
     font-size: 1.125rem;
     font-weight: bold;
     color: #333;
     background: #fff;
+    border-radius: 1000px;
   }
   @media (min-width: 48em) {
     h2 {
