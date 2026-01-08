@@ -1,7 +1,5 @@
 import { broadcastable } from './broadcastable';
-import { interpolateRgbBasis } from 'd3-interpolate';
-import { scaleSequential } from 'd3-scale';
-import { derived, get, readable, writable } from 'svelte/store';
+import { derived, readable, writable } from 'svelte/store';
 import type { ObservationType } from './data';
 import { metricProperties, TUE_5PM } from './constants';
 
@@ -30,25 +28,6 @@ export const extentStores = Object.fromEntries(
     return [key, broadcastable<{ y: [number, number]; x: [number, number] } | undefined>('extents-' + key, undefined)];
   })
 );
-
-export const gradientValues = writable(['#779E00', '#DB7C00', '#F53500']);
-const gradientInterpolator = interpolateRgbBasis(get(gradientValues));
-
-export const gradientScale = writable(scaleSequential([Infinity, -Infinity], gradientInterpolator));
-
-export function setGradientScale(
-  globalMin = -Infinity,
-  globalMax = Infinity,
-  gradientColours = metricProperties.gust.gradientColours
-) {
-  gradientValues.set(gradientColours);
-  const existingGradientScale = get(gradientScale);
-  const newScale = existingGradientScale
-    .copy()
-    .domain([globalMin, globalMax])
-    .interpolator(interpolateRgbBasis(gradientColours));
-  gradientScale.set(newScale);
-}
 
 export const devmode = readable(false, (set, update) => {
   let devmodeToggleCount = 0;
