@@ -7,7 +7,7 @@
    */
 
   import { Html, LayerCake, Svg } from 'layercake';
-  import { gradientScale, activeObservation, observationHandlingLeave } from './lib/stores';
+  import { activeObservation, observationHandlingLeave } from './lib/stores';
   import Line from './Line.svelte';
   import Area from './Area.svelte';
   import Circle from './Circle.svelte';
@@ -33,6 +33,8 @@
     formatTime?: (point: DataPoint) => string;
     /** Sets explicit y-axis bounds. When omitted, bounds are calculated from data min/max */
     yDomain?: [number, number];
+    /** D3 scale for mapping values to gradient colors */
+    gradientScale: any;
   }
 
   let {
@@ -49,7 +51,8 @@
         minute: '2-digit'
       });
     },
-    yDomain
+    yDomain,
+    gradientScale
   }: Props = $props();
 
   // Generate a slug for unique gradient IDs
@@ -96,27 +99,20 @@
 <div class="weather-chart" {onclick}>
   <h2>{name}</h2>
   <div role="figure" class="chart" aria-label={altText}>
-    <LayerCake
-      {data}
-      {padding}
-      x={d => d.x}
-      y={d => d.y}
-      {yDomain}
-      custom={{ gradientScale: $gradientScale, formatValue }}
-    >
+    <LayerCake {data} {padding} x={d => d.x} y={d => d.y} {yDomain} custom={{ gradientScale, formatValue }}>
       <Svg>
         <Area fill={`url('#gradient-shade-${slug}')`} />
         <Line stroke={`url('#gradient-${slug}')`} />
         <defs>
           <linearGradient id="gradient-{slug}" gradientTransform="rotate(90)">
-            <stop offset="0%" stop-color={$gradientScale(maxValue)} />
-            <stop offset="50%" stop-color={$gradientScale(midValue)} />
-            <stop offset="100%" stop-color={$gradientScale(minValue)} />
+            <stop offset="0%" stop-color={gradientScale(maxValue)} />
+            <stop offset="50%" stop-color={gradientScale(midValue)} />
+            <stop offset="100%" stop-color={gradientScale(minValue)} />
           </linearGradient>
           <linearGradient id="gradient-shade-{slug}" gradientTransform="rotate(90)">
-            <stop offset="0%" stop-color={$gradientScale(maxValue)} />
-            <stop offset="50%" stop-color={$gradientScale(midValue)} />
-            <stop offset="100%" stop-color={$gradientScale(minValue)} />
+            <stop offset="0%" stop-color={gradientScale(yDomain[1])} />
+            <stop offset="50%" stop-color={gradientScale(yDomain[1] - yDomain[0])} />
+            <stop offset="100%" stop-color={gradientScale(yDomain[0])} />
           </linearGradient>
         </defs>
         {#if $activeObservation !== null && data.includes($activeObservation as any)}

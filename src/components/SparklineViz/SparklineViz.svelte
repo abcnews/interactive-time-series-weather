@@ -1,9 +1,10 @@
 <script lang="ts">
   import { onMount } from 'svelte';
+  import { interpolateRgbBasis } from 'd3-interpolate';
+  import { scaleSequential } from 'd3-scale';
   import type { LocationsFeatureCollection, TimeSeriesData } from '../../types';
   import { DATA_URL, emitResize, LOCATIONS_URL } from '../util';
   import WeatherChart from './charts/WeatherChart.svelte';
-  import { gradientScale, setGradientScale } from './charts/lib/stores';
   let { locations = ['Brisbane', 'Sydney', 'Melbourne', 'Adelaide'] } = $props();
   let geojson = $state<LocationsFeatureCollection>();
   let data = $state<TimeSeriesData>();
@@ -84,7 +85,8 @@
 
   // Hard-code these for now so they're consistent across multiple frames.
   const [globalMin, globalMax] = [10, 45];
-  setGradientScale(globalMin, globalMax);
+  const gradientColors = ['#779E00', '#DB7C00', '#F53500'];
+  let gradientScale = $state(scaleSequential([globalMin, globalMax], interpolateRgbBasis(gradientColors)));
 </script>
 
 <div class="app" bind:clientHeight>
@@ -97,6 +99,7 @@
           data={location.chartData}
           formatValue={v => `${v.toFixed(1)}°C`}
           yDomain={[globalMin, globalMax]}
+          {gradientScale}
         />
       {/each}
     </div>
