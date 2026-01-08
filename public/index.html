@@ -15,9 +15,33 @@
       #webpack-dev-server-client-overlay {
         display: none !important;
       }
+      /* Default light/dark mode per the operating system */
+      html {
+        color-scheme: light;
+        @media (prefers-color-scheme: dark) {
+          color-scheme: dark;
+        }
+      }
+      html[data-scheme='dark'] {
+        color-scheme: dark;
+      }
     </style>
   </head>
   <body>
     <div data-mount id="interactivetimeseriesweathersparkline"></div>
+    <script lang="text/javascript">
+      function tryLocalStorage(key){
+        try{
+          return localStorage[key]
+        }catch(e){}
+      }
+      // light/dark mode per the ABC preference. This only changes after page reload.
+      if(tryLocalStorage('abc:news:preferences:scheme') === '"dark"'){
+        document.documentElement.dataset['scheme'] = 'dark';
+      }
+      if(tryLocalStorage('abc:news:preferences:scheme') === '"light"'){
+        document.documentElement.dataset['scheme'] = 'light';
+      }
+    </script>
   </body>
 </html>

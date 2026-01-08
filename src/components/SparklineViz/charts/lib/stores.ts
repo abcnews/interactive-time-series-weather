@@ -62,3 +62,6 @@ export const devmode = readable(false, (set, update) => {
 });
 
 export const activeObservation = writable<null | ObservationType>(null);
+
+/** When this is true we don't close the popup in the WeatherChart root because the click came from an interaction with the chart. */
+export const observationHandlingLeave = writable<boolean>(false);

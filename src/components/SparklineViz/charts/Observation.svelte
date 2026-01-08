@@ -6,6 +6,7 @@
    */
 
   import { getContext } from 'svelte';
+  import { observationHandlingLeave } from './lib/stores';
 
   interface Props {
     data: any;
@@ -23,7 +24,13 @@
     if (onenter) onenter(data);
   }
 
-  function handlePointerLeave() {
+  function handlePointerLeave(event: PointerEvent) {
+    // Signal that an Observation is handling this leave event
+    $observationHandlingLeave = true;
+    // Don't call onleave for touch events so touch devices can see labels
+    if (event.pointerType === 'touch') {
+      return;
+    }
     if (onleave) onleave();
   }
 </script>

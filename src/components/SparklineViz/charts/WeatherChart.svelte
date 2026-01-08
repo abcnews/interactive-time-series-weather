@@ -7,7 +7,7 @@
    */
 
   import { Html, LayerCake, Svg } from 'layercake';
-  import { activeObservation } from './lib/stores';
+  import { activeObservation, observationHandlingLeave } from './lib/stores';
   import Line from './Line.svelte';
   import Area from './Area.svelte';
   import Circle from './Circle.svelte';
@@ -78,9 +78,25 @@
     const time = formatTime(d);
     return time ? `${value} ${time}` : value;
   }
+
+  /**
+   * Close the popup when we click outside of the chart.
+   */
+  function onclick(e) {
+    // If an Observation component is handling this leave event, ignore it here
+    if ($observationHandlingLeave) {
+      $observationHandlingLeave = false;
+      return;
+    }
+    $observationHandlingLeave = false;
+    $activeObservation = null;
+  }
 </script>
 
-<div class="weather-chart">
+<!-- This is a bubbled click handler to remove labels for touch events that have suitable alt text in the Observations <ol> -->
+<!-- svelte-ignore a11y_click_events_have_key_events -->
+<!-- svelte-ignore a11y_no_static_element_interactions -->
+<div class="weather-chart" {onclick}>
   <h2>{name}</h2>
   <div role="figure" class="chart" aria-label={altText}>
     <LayerCake {data} {padding} x={d => d.x} y={d => d.y} {yDomain} custom={{ gradientScale, formatValue }}>

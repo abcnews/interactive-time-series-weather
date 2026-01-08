@@ -1,6 +1,6 @@
 {
 	"name": "interactive-time-series-weather-map",
-	"version": "1.0.6",
+	"version": "1.0.17",
 	"description": "Show weather data on a MapLibre spike map.",
 	"license": "MIT",
 	"private": true,
@@ -45,6 +45,7 @@
 		"d3-shape": "^3.2.0",
 		"d3-time-format": "^4.1.0",
 		"layercake": "^8.4.2",
+		"lodash-es": "^4.17.22",
 		"svelte": "^5.46.0",
 		"three": "^0.182.0",
 		"valibot": "^1.2.0"
