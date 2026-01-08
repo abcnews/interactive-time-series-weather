@@ -1,14 +1,17 @@
 <script lang="ts">
-  import { onMount } from 'svelte';
+  import { onMount, untrack } from 'svelte';
   import { interpolateRgbBasis } from 'd3-interpolate';
   import { scaleSequential } from 'd3-scale';
   import type { LocationsFeatureCollection, TimeSeriesData } from '../../types';
   import { DATA_URL, emitResize, LOCATIONS_URL } from '../util';
   import WeatherChart from './charts/WeatherChart.svelte';
+  import { intersectionObserver } from './useIntersectionObserver.js';
+
   let { locations = ['Brisbane', 'Sydney', 'Melbourne', 'Adelaide'] } = $props();
   let geojson = $state<LocationsFeatureCollection>();
   let data = $state<TimeSeriesData>();
   let clientHeight = $state(0);
+  let status = $state('offscreen');
 
   $effect(() => {
     if (clientHeight) {
@@ -16,13 +19,19 @@
     }
   });
 
-  onMount(async () => {
-    const [loadedGeojson, loadedData] = await Promise.all([
-      fetch(LOCATIONS_URL).then(res => res.json() as Promise<LocationsFeatureCollection>),
-      fetch(DATA_URL).then(res => res.json() as Promise<TimeSeriesData>)
-    ]);
-    geojson = loadedGeojson;
-    data = loadedData;
+  $effect(() => {
+    console.log({ status });
+    if (status === 'inview') {
+      console.log("in view, let's go");
+      untrack(async () => {
+        const [loadedGeojson, loadedData] = await Promise.all([
+          fetch(LOCATIONS_URL).then(res => res.json() as Promise<LocationsFeatureCollection>),
+          fetch(DATA_URL).then(res => res.json() as Promise<TimeSeriesData>)
+        ]);
+        geojson = loadedGeojson;
+        data = loadedData;
+      });
+    }
   });
 
   let foundLocations = $derived.by(() => {
@@ -66,30 +75,22 @@
       });
   });
 
-  // Calculate global min and max values across all locations for shared y-axis
-  // let { globalMin = 0, globalMax = 0 } = $derived.by(() => {
-  //   if (foundLocations.length === 0) {
-  //     return { min: 0, max: 0 };
-  //   }
-
-  //   const allYValues = foundLocations.flatMap(location => location.chartData.map(d => d.y));
-
-  //   let globalMin = Math.min(...allYValues);
-  //   let globalMax = Math.max(...allYValues);
-
-  //   return {
-  //     globalMin,
-  //     globalMax
-  //   };
-  // });
-
   // Hard-code these for now so they're consistent across multiple frames.
   const [globalMin, globalMax] = [10, 45];
   const gradientColors = ['#779E00', '#DB7C00', '#F53500'];
   let gradientScale = $state(scaleSequential([globalMin, globalMax], interpolateRgbBasis(gradientColors)));
 </script>
 
-<div class="app" bind:clientHeight>
+<div
+  class="app"
+  bind:clientHeight
+  use:intersectionObserver={{
+    threshold: 0.1,
+    onEnter: () => {
+      status = 'inview';
+    }
+  }}
+>
   <div class="charts">
     {#each foundLocations as location, i}
       <div style:--delay="{i * 0.5}ms">
