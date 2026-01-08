@@ -23,19 +23,15 @@ export function setTransparent() {
 
 let prevHeight = 0;
 
-const debouncedPostMessage = debounce((height: number) => {
-  var payload = {
-    type: 'embed-size',
-    height
-  };
-  window.parent?.postMessage(payload, '*');
-}, 500);
-
 export function emitResize(height: number) {
   if (prevHeight === height) {
     console.warn('Not resizing, same height as before.');
     return;
   }
   prevHeight = height;
-  debouncedPostMessage(height);
+  var payload = {
+    type: 'embed-size',
+    height
+  };
+  window.parent?.postMessage(payload, '*');
 }
