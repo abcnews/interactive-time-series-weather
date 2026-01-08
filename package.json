@@ -1,6 +1,6 @@
 {
 	"name": "interactive-time-series-weather-map",
-	"version": "1.0.15",
+	"version": "1.0.16",
 	"description": "Show weather data on a MapLibre spike map.",
 	"license": "MIT",
 	"private": true,
