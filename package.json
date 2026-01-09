@@ -1,6 +1,6 @@
 {
 	"name": "interactive-time-series-weather-map",
-	"version": "1.0.19",
+	"version": "1.0.20",
 	"description": "Show weather data in time series charts",
 	"license": "MIT",
 	"private": true,
