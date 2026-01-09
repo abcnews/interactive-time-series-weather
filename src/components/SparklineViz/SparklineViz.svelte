@@ -117,7 +117,7 @@
     // Calculate default domain from chart data
     if (charts.length > 0) {
       const allXValues = charts.flatMap(chart => chart.chartData.map(point => point.x));
-      return calculateDomain(allXValues);
+      return calculateDomain(allXValues, 0);
     }
 
     return [0, 100];
@@ -155,6 +155,7 @@
       });
     }
   });
+  $effect(() => console.log({ xDomain: xDomain.map(dom => new Date(dom)) }));
 </script>
 
 <div
