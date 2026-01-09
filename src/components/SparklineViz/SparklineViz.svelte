@@ -2,6 +2,7 @@
   import Chart from './charts/Chart.svelte';
   import { intersectionObserver } from './useIntersectionObserver.js';
   import { emitResize } from '../util';
+  import { calculateDomain } from './charts/lib/utils';
   import { untrack } from 'svelte';
 
   /**
@@ -26,6 +27,8 @@
       }>;
       /** Optional override for y-axis domain */
       yDomain?: [number, number];
+      /** Optional override for x-axis domain */
+      xDomain?: [number, number];
       /** Optional override for gradient scale function */
       gradientScale?: (value: number) => string;
       /** Optional override for value formatting function */
@@ -43,6 +46,11 @@
     yDomain?: [number, number];
 
     /**
+     * The domain (min/max) for the x-axis.
+     */
+    xDomain?: [number, number];
+
+    /**
      * Scale function for mapping values to colors.
      */
     gradientScale?: (value: number) => string;
@@ -58,6 +66,7 @@
     loadData,
     formatValue: formatValueProp,
     yDomain: yDomainProp,
+    xDomain: xDomainProp,
     gradientScale: gradientScaleProp,
     attribution
   }: SparklineVizProps = $props();
@@ -74,15 +83,14 @@
   // Store overrides from loadData
   let overrides = $state<{
     yDomain?: [number, number];
+    xDomain?: [number, number];
     gradientScale?: (value: number) => string;
     formatValue?: (value: number) => string;
   }>({});
 
-  // Calculate final values using $derived
   let formatValue = $derived(overrides.formatValue ?? formatValueProp);
   let gradientScale = $derived(overrides.gradientScale ?? gradientScaleProp);
 
-  // Calculate yDomain with default fallback
   let yDomain = $derived.by<[number, number]>(() => {
     // Use override if provided
     if (overrides.yDomain) return overrides.yDomain;
@@ -93,16 +101,25 @@
     // Calculate default domain from chart data
     if (charts.length > 0) {
       const allYValues = charts.flatMap(chart => chart.chartData.map(point => point.y));
-      const minY = Math.min(...allYValues);
-      const maxY = Math.max(...allYValues);
-
-      // Add some padding to the domain
-      const padding = (maxY - minY) * 0.1; // 10% padding
-      const calculatedYDomain = [minY - padding, maxY + padding] as [number, number];
-      return calculatedYDomain;
+      return calculateDomain(allYValues);
     }
 
-    // Fallback default
+    return [0, 100];
+  });
+
+  let xDomain = $derived.by<[number, number]>(() => {
+    // Use override if provided
+    if (overrides.xDomain) return overrides.xDomain;
+
+    // Use prop if provided
+    if (xDomainProp) return xDomainProp;
+
+    // Calculate default domain from chart data
+    if (charts.length > 0) {
+      const allXValues = charts.flatMap(chart => chart.chartData.map(point => point.x));
+      return calculateDomain(allXValues);
+    }
+
     return [0, 100];
   });
 
@@ -131,6 +148,7 @@
         // Store overrides from the result
         overrides = {
           yDomain: result.yDomain,
+          xDomain: result.xDomain,
           gradientScale: result.gradientScale,
           formatValue: result.formatValue
         };
@@ -158,6 +176,7 @@
           data={chart.chartData}
           {formatValue}
           {yDomain}
+          {xDomain}
           {gradientScale}
         />
       </div>

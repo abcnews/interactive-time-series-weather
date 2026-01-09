@@ -33,6 +33,8 @@
     formatTime?: (point: DataPoint) => string;
     /** Sets explicit y-axis bounds. When omitted, bounds are calculated from data min/max */
     yDomain?: [number, number];
+    /** Sets explicit x-axis bounds. When omitted, bounds are calculated from data min/max */
+    xDomain?: [number, number];
     /** D3 scale for mapping values to gradient colors */
     gradientScale: any;
   }
@@ -52,6 +54,7 @@
       });
     },
     yDomain,
+    xDomain,
     gradientScale
   }: Props = $props();
 
@@ -100,7 +103,7 @@
   <h2>{name}</h2>
   <div role="figure" class="chart" aria-label={altText}>
     {#if data.length > 0}
-      <LayerCake {data} {padding} x={d => d.x} y={d => d.y} {yDomain} custom={{ gradientScale, formatValue }}>
+      <LayerCake {data} {padding} x={d => d.x} y={d => d.y} {yDomain} {xDomain} custom={{ gradientScale, formatValue }}>
         <Svg>
           <Area fill={`url('#gradient-shade-${slug}')`} />
           <Line stroke={`url('#gradient-${slug}')`} />

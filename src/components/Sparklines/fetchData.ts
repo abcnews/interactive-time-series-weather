@@ -18,11 +18,7 @@ export async function fetchData(locationsUrl, dataUrl, locations): Promise<Chart
       const auroraId = feature.properties.auroraId;
       const timeSeries = (data.series[auroraId] ||= []);
 
-      // Transform data with null handling
-      let previousNulls = 0;
-      let previousValue;
       const chartData = timeSeries.reduce((acc: Array<{ x: number; y: number }>, val, index) => {
-        previousValue = val ?? previousValue ?? 0;
         const timestamp = new Date(data.timestamps[index]);
 
         // Filter out data older than 5 days
@@ -31,12 +27,16 @@ export async function fetchData(locationsUrl, dataUrl, locations): Promise<Chart
         }
 
         const hasVal = val !== null;
-        previousNulls = hasVal ? 0 : previousNulls + 1;
-
-        acc.push({
-          x: timestamp.getTime(),
-          y: hasVal ? val : previousNulls < 10 ? previousValue : 0
-        });
+        // Ignore null values. This will truncate the start/end of the charts
+        // when values are missing.
+        // BUG: When data is missing in the middle of a chart (rare) this will
+        // draw a line between the two good points, which may not be desirable.
+        if (hasVal) {
+          acc.push({
+            x: timestamp.getTime(),
+            y: val
+          });
+        }
 
         return acc;
       }, []);
