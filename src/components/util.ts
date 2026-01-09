@@ -1,6 +1,3 @@
-import { debounce } from 'lodash-es';
-
-export const DATA_URL = 'https://abcnewsdata.sgp1.digitaloceanspaces.com/data-time-series-weather/tempc.json';
 export const LOCATIONS_URL = 'https://abcnewsdata.sgp1.digitaloceanspaces.com/data-time-series-weather/au.geo.json';
 
 let prevHeight = 0;
