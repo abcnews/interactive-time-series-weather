@@ -138,5 +138,6 @@
     height: 100%;
     border: 0;
     position: relative;
+    overflow: auto;
   }
 </style>
