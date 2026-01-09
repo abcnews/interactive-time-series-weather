@@ -3,7 +3,8 @@ import { whenDOMReady } from '@abcnews/env-utils';
 import { getMountValue, selectMounts } from '@abcnews/mount-utils';
 // import MapViz from './components/MapViz/MapViz.svelte';
 import { mount } from 'svelte';
-import TempCSparklineViz from './components/SparklineViz/TempCSparklineViz.svelte';
+import TempCSparklineViz from './components/Sparklines/TempCSparklineViz.svelte';
+import AverageWindSpeedKmViz from './components/Sparklines/AverageWindSpeedKmViz.svelte';
 
 whenDOMReady.then(async () => {
   // const [mapMountEl] = selectMounts('interactivetimeseriesweathermap');
@@ -20,9 +21,19 @@ whenDOMReady.then(async () => {
 
   if (sparklineMountEl) {
     const params = new URLSearchParams(location.search);
+    const typeParam = params.get('viz') || '';
     const locationParams = params.get('locations') || 'Brisbane,Sydney,Melbourne,Adelaide';
     const locations = locationParams.split(',');
-    mount(TempCSparklineViz, {
+
+    const vizComponents = {
+      tempc: TempCSparklineViz,
+      wind: AverageWindSpeedKmViz
+    };
+    const ComponentToLoad = vizComponents[typeParam];
+    if (!ComponentToLoad) {
+      throw new Error(`viz=${JSON.stringify(typeParam)} not found. Must be one of ${Object.keys(vizComponents)}`);
+    }
+    mount(ComponentToLoad, {
       target: sparklineMountEl,
       props: { locations }
     });
