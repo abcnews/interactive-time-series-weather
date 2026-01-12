@@ -2,8 +2,7 @@
   import { BuilderStyleRoot, BuilderFrame, UpdateChecker, Typeahead, Loader } from '@abcnews/components-builder';
   import { onMount } from 'svelte';
   import { LOCATIONS_URL } from '../util';
-  import TempCSparklineViz from '../Sparklines/TempCSparklineViz.svelte';
-  import AverageWindSpeedKmViz from '../Sparklines/AverageWindSpeedKmViz.svelte';
+  import Sparklines from '../Sparklines/Sparklines.svelte';
   const defaultParams = new URLSearchParams(location.hash.slice(1));
 
   let textarea = $state('');
@@ -67,39 +66,35 @@
   let iframeUrl = $derived.by(
     () => `https://${location.host}${location.pathname.replace(/\/builder\/?/, '/')}?${hash}&abcnewsembedheight=600`
   );
-
-  let VizComponent = $derived.by(() => {
-    const vizComponents = {
-      tempc: TempCSparklineViz,
-      wind: AverageWindSpeedKmViz
-    };
-    const ComponentToLoad = vizComponents[vizType];
-    if (!ComponentToLoad) {
-      throw new Error(`viz=${JSON.stringify(vizType)} not found. Must be one of ${Object.keys(vizComponents)}`);
-    }
-    return ComponentToLoad;
-  });
 </script>
 
 {#snippet Viz()}
   <div class="frame">
     {#key locations}
-      <VizComponent {locations} />
+      <Sparklines {vizType} {locations} />
     {/key}
   </div>
 {/snippet}
 
 {#snippet Sidebar()}
-  <fieldset>
+  <fieldset class="chart-type">
     <legend>Chart type</legend>
     <div class="radio-group">
       <label>
         <input type="radio" name="vizType" value="tempc" bind:group={vizType} />
-        Temperature (°C)
+        Temperature
       </label>
       <label>
         <input type="radio" name="vizType" value="wind" bind:group={vizType} />
-        Wind Speed (km/h)
+        Wind (average)
+      </label>
+      <label>
+        <input type="radio" name="vizType" value="gust" bind:group={vizType} />
+        Wind (max gust)
+      </label>
+      <label>
+        <input type="radio" name="vizType" value="rain" bind:group={vizType} />
+        Rain
       </label>
     </div>
   </fieldset>
@@ -145,5 +140,9 @@
     border: 0;
     position: relative;
     overflow: auto;
+  }
+
+  .chart-type label {
+    white-space: nowrap;
   }
 </style>
