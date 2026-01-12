@@ -10,7 +10,7 @@
 
   // Wind speed configuration
   const gradientColors = metricProperties.gust.gradientColours;
-  const formatValue = (v: number) => `${v.toFixed(1)} km/h`;
+  const formatValue = (v: number) => `${v.toFixed(0)} km/h`;
   const gradientScale = scaleSequential([0, 100], interpolateRgbBasis(gradientColors));
 </script>
 
