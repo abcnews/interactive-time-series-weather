@@ -77,6 +77,7 @@ export class BroadcastBlocker {
       const done = async () => {
         clearTimeout(timeoutId);
         this.#localEmitter.removeEventListener('unblocked', localListener);
+        this.#broadcastChannel.removeEventListener('message', channelListener);
         await this.waitUntilUnblocked();
         resolve();
       };
