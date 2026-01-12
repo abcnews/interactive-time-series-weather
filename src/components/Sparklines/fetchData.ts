@@ -1,4 +1,5 @@
 import type { LocationsFeatureCollection, TimeSeriesData } from '../../types';
+import { blockingFetch } from '../util';
 
 export type ChartData = {
   name: string;
@@ -7,8 +8,8 @@ export type ChartData = {
 
 export async function fetchData(locationsUrl, dataUrl, locations): Promise<ChartData[]> {
   const [geojson, data] = await Promise.all([
-    fetch(locationsUrl).then(res => res.json() as Promise<LocationsFeatureCollection>),
-    fetch(dataUrl).then(res => res.json() as Promise<TimeSeriesData>)
+    blockingFetch(locationsUrl).then(res => res.json() as Promise<LocationsFeatureCollection>),
+    blockingFetch(dataUrl).then(res => res.json() as Promise<TimeSeriesData>)
   ]);
 
   return locations
