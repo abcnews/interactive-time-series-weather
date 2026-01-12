@@ -25,30 +25,29 @@ function tryStorage(
   }
 }
 
-/**
- * Prevents parallel requests across iframes from bypassing the browser cache.
- * e.g. if multiple iframes request the same resource simultaneously, only the first fetches
- * while others wait, then use the cached response.
- *
- * Uses sessionStorage and BroadcastChannel for cross-context synchronization, with automatic
- * timeout to prevent deadlocks.
- *
- * @example
- * ```typescript
- * const blocker = new BroadcastBlocker(url);
- * await blocker.waitUntilUnblocked();
- * blocker.block();
- * const response = await fetch(url);
- * blocker.unblock();
- * ```
- */
 export class BroadcastBlocker {
   name = '';
   timeoutMs = 10000;
   #localEmitter = document.createElement('div');
   #broadcastChannel: BroadcastChannel = new BroadcastChannel('fetchBlocking');
-
-  /** @param name - Unique identifier for the resource (e.g., fetch URL) */
+  /**
+   * Prevents parallel requests across iframes from bypassing the browser cache.
+   * e.g. if multiple iframes request the same resource simultaneously, only the first fetches
+   * while others wait, then use the cached response.
+   *
+   * Uses sessionStorage and BroadcastChannel for cross-context synchronization, with automatic
+   * timeout to prevent deadlocks.
+   *
+   * @example
+   * ```typescript
+   * const blocker = new BroadcastBlocker(url);
+   * await blocker.waitUntilUnblocked();
+   * blocker.block();
+   * const response = await fetch(url);
+   * blocker.unblock();
+   * ```
+   * @param name - Unique identifier for the resource (e.g., fetch URL)
+   */
   constructor(name, { timeoutMs }: { timeoutMs?: number } = {}) {
     this.name = name;
     if (timeoutMs) {
