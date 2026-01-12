@@ -155,7 +155,6 @@
       });
     }
   });
-  $effect(() => console.log({ xDomain: xDomain.map(dom => new Date(dom)) }));
 </script>
 
 <div
