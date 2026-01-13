@@ -94,7 +94,11 @@
       </label>
       <label>
         <input type="radio" name="vizType" value="rain" bind:group={vizType} />
-        Rain
+        Rainfall since 9am
+      </label>
+      <label>
+        <input type="radio" name="vizType" value="humidity" bind:group={vizType} />
+        Relative Humidity
       </label>
     </div>
   </fieldset>

@@ -3,13 +3,15 @@
   import MaximumGustKmh from './MaximumGustKmh.svelte';
   import PrecipitationSince9amMM from './PrecipitationSince9amMM.svelte';
   import AverageWindSpeedKmViz from './AverageWindSpeedKmViz.svelte';
+  import RelativeHumidityPct from './RelativeHumidityPct.svelte';
 
   let { vizType, locations = [] } = $props();
   const vizComponents = {
     tempc: TempCSparklineViz,
     wind: AverageWindSpeedKmViz,
     gust: MaximumGustKmh,
-    rain: PrecipitationSince9amMM
+    rain: PrecipitationSince9amMM,
+    humidity: RelativeHumidityPct
   };
   let ComponentToLoad = $derived.by(() => {
     return vizComponents[vizType];
