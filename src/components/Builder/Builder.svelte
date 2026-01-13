@@ -1,4 +1,5 @@
 <script lang="ts">
+  import RangeSlider from 'svelte-range-slider-pips';
   import { BuilderStyleRoot, BuilderFrame, UpdateChecker, Typeahead, Loader } from '@abcnews/components-builder';
   import { onMount } from 'svelte';
   import { LOCATIONS_URL } from '../util';
@@ -16,6 +17,10 @@
   let hash = $state(window.location.hash.slice(1));
   let locationOptions = $state<{ value: string; label: string }[]>([]);
   let isLoading = $state(true);
+  let startDate = $state(
+    defaultParams.get('startDate') || new Date(Date.now() - 1000 * 60 * 60 * 24 * 5).toISOString().substring(0, 10)
+  );
+  let endDate = $state(defaultParams.get('endDate') || new Date().toISOString().substring(0, 10));
 
   onMount(async () => {
     addEventListener('hashchange', () => {
@@ -50,6 +55,8 @@
     const params = new URLSearchParams();
     params.append('locations', locations.join());
     params.append('viz', vizType);
+    params.append('startDate', startDate);
+    params.append('endDate', endDate);
     window.location.hash = params.toString();
   });
 
@@ -70,8 +77,8 @@
 
 {#snippet Viz()}
   <div class="frame">
-    {#key locations}
-      <Sparklines {vizType} {locations} />
+    {#key locations.join() + startDate + endDate}
+      <Sparklines {vizType} {locations} {startDate} {endDate} />
     {/key}
   </div>
 {/snippet}
@@ -123,8 +130,19 @@
   </fieldset>
   <fieldset>
     <legend>Bulk paste locations</legend>
-
+    <p>Paste locations one per line (e.g. from a spreadsheet)</p>
     <textarea bind:value={textarea}> </textarea>
+  </fieldset>
+  <fieldset>
+    <legend>Date range</legend>
+    <label>
+      Start date
+      <input type="date" min="2026-01-01" bind:value={startDate} />
+    </label>
+    <label>
+      End date
+      <input type="date" min="2026-01-02" bind:value={endDate} />
+    </label>
   </fieldset>
   <fieldset>
     <legend>Iframe url</legend>

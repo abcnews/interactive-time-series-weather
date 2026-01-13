@@ -5,7 +5,7 @@
   import SparklineViz from '../SparklineViz/SparklineViz.svelte';
   import { fetchData, type ChartData } from './fetchData';
 
-  let { locations = ['Brisbane', 'Sydney', 'Melbourne', 'Adelaide'] } = $props();
+  let { locations = ['Brisbane', 'Sydney', 'Melbourne', 'Adelaide'], startDate = '', endDate = '' } = $props();
 
   // Temperature-specific configuration
   const yDomain: [number, number] = [10, 45];
@@ -17,11 +17,11 @@
 <SparklineViz
   placeholders={locations}
   loadData={async (): Promise<{ charts: ChartData[] }> => {
-    const charts = await fetchData(
-      LOCATIONS_URL,
-      'https://abcnewsdata.sgp1.digitaloceanspaces.com/data-time-series-weather/tempc.json',
-      locations
-    );
+    const charts = await fetchData({
+      dataBaseUrl: 'https://abcnewsdata.sgp1.digitaloceanspaces.com/data-time-series-weather-test/snapshots/tempC',
+      locations,
+      range: { startDate, endDate }
+    });
     return { charts };
   }}
   {formatValue}

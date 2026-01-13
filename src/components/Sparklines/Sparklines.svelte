@@ -5,7 +5,7 @@
   import AverageWindSpeedKmViz from './AverageWindSpeedKmViz.svelte';
   import RelativeHumidityPct from './RelativeHumidityPct.svelte';
 
-  let { vizType, locations = [] } = $props();
+  let { vizType, locations = [], startDate = '', endDate = '' } = $props();
   const vizComponents = {
     tempc: TempCSparklineViz,
     wind: AverageWindSpeedKmViz,
@@ -19,7 +19,7 @@
 </script>
 
 {#if ComponentToLoad}
-  <ComponentToLoad {locations} />
+  <ComponentToLoad {locations} {startDate} {endDate} />
 {/if}
 
 {#if !ComponentToLoad}
