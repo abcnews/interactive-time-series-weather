@@ -9,6 +9,9 @@ export const metricProperties: Record<MetricType, { gradientColours: string[] }>
   gust: {
     gradientColours: ['#24A800', '#DB7C00', '#F53500']
   },
+  humidity: {
+    gradientColours: ['#DB7C00', '#DB7C00', '#B400F5', '#B400F5']
+  },
 
   rain: {
     gradientColours: ['#00A87B', '#0090F3', '#B400F5']

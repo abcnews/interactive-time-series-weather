@@ -8,7 +8,7 @@
 
   let { locations = ['Brisbane', 'Sydney', 'Melbourne', 'Adelaide'] } = $props();
 
-  const gradientColors = metricProperties.gust.gradientColours;
+  const gradientColors = metricProperties.humidity.gradientColours;
   const formatValue = (v: number) => `${v.toFixed(0)}%`;
   const gradientScale = scaleSequential([0, 100], interpolateRgbBasis(gradientColors));
 </script>
