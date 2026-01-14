@@ -22,6 +22,15 @@
   );
   let endDate = $state(defaultParams.get('endDate') || new Date().toISOString().substring(0, 10));
 
+  $effect(() => {
+    if (!startDate) {
+      startDate = new Date(Date.now() - 1000 * 60 * 60 * 24 * 5).toISOString().slice(0, 10);
+    }
+    if (!endDate) {
+      endDate = new Date(Date.now()).toISOString().slice(0, 10);
+    }
+  });
+
   onMount(async () => {
     addEventListener('hashchange', () => {
       const newHash = window.location.hash.slice(1);
