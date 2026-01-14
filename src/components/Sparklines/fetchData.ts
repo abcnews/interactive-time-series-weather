@@ -12,7 +12,7 @@ export type ChartData = {
  * @param dataBaseUrl - the base url for the files. Files are YYYY-MM-DD.json
  * @returns
  */
-async function fetchChunkedData(dataBaseUrl: string, { startDate = new Date(), endDate = new Date() }) {
+async function fetchChunkedData(dataBaseUrl: string, { startDate = '', endDate = '' }) {
   const distanceDays = (Number(new Date(endDate)) - Number(new Date(startDate))) / 1000 / 60 / 60 / 24;
   if (distanceDays > 14 || distanceDays < 0) {
     throw new Error('Dates out of range');
@@ -22,7 +22,6 @@ async function fetchChunkedData(dataBaseUrl: string, { startDate = new Date(), e
     .map(date => `${date.toISOString().slice(0, 10)}`);
 
   const urls = filenames.map(filename => `${dataBaseUrl}/${filename}.json`);
-  console.log(urls);
 
   const datasets = await Promise.all(
     urls.map(url =>
