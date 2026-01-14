@@ -12,9 +12,17 @@ type LocationsFeatureCollection = FeatureCollection<
   }
 >;
 
+/**
+ * Represents time series data for weather observations.
+ * @property {string} updatedDate - The date and time when the data was last updated, in ISO 8601 format.
+ * @property {string} startDate - The start date and time of the time series, in ISO 8601 format.
+ * @property {Record<string, Array<[number, any]>>} series - A record where each key is a location ID and the value is an array of tuples.
+ *    Each tuple contains the minutes offset from midnight and the corresponding weather value.
+ */
 type TimeSeriesData = {
-  timestamps: string[];
-  series: Record<string, (number | null)[]>;
+  updatedDate: string;
+  startDate: string;
+  series: Record<string, Array<[number, any]>>;
 };
 
 // Weather Chart types

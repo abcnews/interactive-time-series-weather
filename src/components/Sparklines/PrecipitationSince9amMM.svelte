@@ -1,12 +1,11 @@
 <script lang="ts">
-  import { LOCATIONS_URL } from '../util';
   import { interpolateRgbBasis } from 'd3-interpolate';
   import { scaleSequential } from 'd3-scale';
   import SparklineViz from '../SparklineViz/SparklineViz.svelte';
-  import { fetchData } from './fetchData';
+  import { fetchData, type ChartData } from './fetchData';
   import { metricProperties } from '../SparklineViz/charts/lib/constants';
 
-  let { locations = ['Brisbane', 'Sydney', 'Melbourne', 'Adelaide'] } = $props();
+  let { locations = ['Brisbane', 'Sydney', 'Melbourne', 'Adelaide'], startDate = '', endDate = '' } = $props();
 
   const gradientColors = metricProperties.rain.gradientColours;
   const formatValue = (v: number) => `${v.toFixed(0)} mm`;
@@ -15,12 +14,14 @@
 
 <SparklineViz
   placeholders={locations}
-  loadData={async () => {
-    const charts = await fetchData(
-      LOCATIONS_URL,
-      'https://abcnewsdata.sgp1.digitaloceanspaces.com/data-time-series-weather/precipitationSince9amMM.json',
-      locations
-    );
+  loadData={async (): Promise<{ charts: ChartData[] }> => {
+    const charts = await fetchData({
+      dataBaseUrl:
+        'https://abcnewsdata.sgp1.digitaloceanspaces.com/data-time-series-weather/assets/precipitationSince9amMM',
+      locations,
+      range: { startDate, endDate }
+    });
+
     return { charts };
   }}
   {formatValue}
