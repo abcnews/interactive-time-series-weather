@@ -134,6 +134,10 @@
   );
 
   $effect(() => {
+    console.log({ placeholders });
+  });
+
+  $effect(() => {
     if (clientHeight) {
       emitResize(clientHeight);
     }

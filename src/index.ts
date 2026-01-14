@@ -12,12 +12,16 @@ whenDOMReady.then(async () => {
     const vizType = params.get('viz') || '';
     const locationParams = params.get('locations') || 'Brisbane,Sydney,Melbourne,Adelaide';
     const locations = locationParams.split(',');
+    const startDate = params.get('startDate') || '';
+    const endDate = params.get('endDate') || '';
 
     mount(Sparklines, {
       target: sparklineMountEl,
       props: {
         vizType,
-        locations
+        locations,
+        startDate,
+        endDate
       }
     });
   }
