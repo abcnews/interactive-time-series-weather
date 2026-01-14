@@ -18,10 +18,11 @@
   placeholders={locations}
   loadData={async (): Promise<{ charts: ChartData[] }> => {
     const charts = await fetchData({
-      dataBaseUrl: 'https://abcnewsdata.sgp1.digitaloceanspaces.com/data-time-series-weather-test/snapshots/tempC',
+      dataBaseUrl: 'https://abcnewsdata.sgp1.digitaloceanspaces.com/data-time-series-weather-test/assets/tempC',
       locations,
       range: { startDate, endDate }
     });
+
     return { charts };
   }}
   {formatValue}
