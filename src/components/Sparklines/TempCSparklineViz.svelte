@@ -1,5 +1,4 @@
 <script lang="ts">
-  import { LOCATIONS_URL } from '../util';
   import { interpolateRgbBasis } from 'd3-interpolate';
   import { scaleSequential } from 'd3-scale';
   import SparklineViz from '../SparklineViz/SparklineViz.svelte';
@@ -18,7 +17,7 @@
   placeholders={locations}
   loadData={async (): Promise<{ charts: ChartData[] }> => {
     const charts = await fetchData({
-      dataBaseUrl: 'https://abcnewsdata.sgp1.digitaloceanspaces.com/data-time-series-weather-test/assets/tempC',
+      dataBaseUrl: 'https://abcnewsdata.sgp1.digitaloceanspaces.com/data-time-series-weather/assets/tempC',
       locations,
       range: { startDate, endDate }
     });

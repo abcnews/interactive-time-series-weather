@@ -70,7 +70,7 @@ export async function fetchData({
           }
           const values = dataset.series[auroraId];
           const startDate = new Date(dataset.startDate);
-          values.forEach(([offsetMinutes, value]) => {
+          values?.forEach(([offsetMinutes, value]) => {
             const thisDate = new Date(Number(startDate) + offsetMinutes * 60 * 1000);
             chartData.push({
               x: thisDate.getTime(),
