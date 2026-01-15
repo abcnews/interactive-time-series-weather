@@ -47,7 +47,6 @@
 		"layercake": "^8.4.2",
 		"lodash-es": "^4.17.22",
 		"svelte": "^5.46.0",
-		"svelte-range-slider-pips": "^4.1.0",
 		"three": "^0.182.0",
 		"valibot": "^1.2.0"
 	}

@@ -1,5 +1,4 @@
 <script lang="ts">
-  import RangeSlider from 'svelte-range-slider-pips';
   import { BuilderStyleRoot, BuilderFrame, UpdateChecker, Typeahead, Loader } from '@abcnews/components-builder';
   import { onMount } from 'svelte';
   import { LOCATIONS_URL } from '../util';
