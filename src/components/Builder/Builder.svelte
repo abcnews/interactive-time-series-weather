@@ -6,8 +6,6 @@
   import Sparklines from '../Sparklines/Sparklines.svelte';
   const defaultParams = new URLSearchParams(location.hash.slice(1));
 
-  let textarea = $state('');
-
   let locations = $state(
     (defaultParams.get('locations') || 'Brisbane,Sydney,Melbourne,Adelaide,Perth,Darwin,Canberra,Hobart')
       .split(',')
@@ -21,6 +19,27 @@
     defaultParams.get('startDate') || new Date(Date.now() - 1000 * 60 * 60 * 24 * 5).toISOString().substring(0, 10)
   );
   let endDate = $state(defaultParams.get('endDate') || new Date().toISOString().substring(0, 10));
+
+  function bulkPasteLocations() {
+    const input = prompt('Paste locations one per line (e.g. from a spreadsheet)', locations.join('\n'));
+    if (input === null) {
+      return;
+    }
+    locations = input
+      .split('\n')
+      .map(location => location.trim())
+      .filter(Boolean);
+  }
+
+  function loadFromIframeUrl() {
+    const input = prompt('Paste an iframe URL to load its settings');
+    const search = input?.split('?')[1];
+    if (!input || !search) {
+      return;
+    }
+    window.location.hash = search;
+    window.location.reload();
+  }
 
   $effect(() => {
     if (!startDate) {
@@ -67,16 +86,6 @@
     params.append('startDate', startDate);
     params.append('endDate', endDate);
     window.location.hash = params.toString();
-  });
-
-  $effect(() => {
-    if (textarea) {
-      locations = textarea
-        .split('\n')
-        .map(location => location.trim())
-        .filter(Boolean);
-      textarea = '';
-    }
   });
 
   let iframeUrl = $derived.by(
@@ -138,11 +147,6 @@
     {/if}
   </fieldset>
   <fieldset>
-    <legend>Bulk paste locations</legend>
-    <p>Paste locations one per line (e.g. from a spreadsheet)</p>
-    <textarea bind:value={textarea}> </textarea>
-  </fieldset>
-  <fieldset>
     <legend>Date range</legend>
     <label>
       Start date
@@ -156,6 +160,11 @@
   <fieldset>
     <legend>Iframe url</legend>
     <input readonly value={iframeUrl} />
+  </fieldset>
+  <fieldset>
+    <legend>Tools</legend>
+    <button onclick={bulkPasteLocations}>Bulk paste locations</button>
+    <button onclick={loadFromIframeUrl}>Load from iframe URL</button>
   </fieldset>
   <UpdateChecker />
 {/snippet}
