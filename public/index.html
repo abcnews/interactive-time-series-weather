@@ -52,35 +52,43 @@
     <div data-mount id="interactivetimeseriesweathersparkline"></div>
     <script lang="text/javascript">
       (() => {
-        /** The parent page when iframed same-domain. */
-        const parentBody = (() => {
-          try{
-            return parent.location.href !== location.href ? parent.document.body : null;
-          }catch(e){
-            return null
-          }
-        })();
+        /** closest [data-scheme] element to our iframe */
+        const getSchemeInParent = () => {
+          try {
+            return Array.from(parent.document.querySelectorAll('iframe')).find((iframe) => iframe.src === String(window.location))?.closest('[data-scheme]');
+          } catch (e) {}
+        };
 
         const doc = document.documentElement;
         const setScheme = (isDark) => (doc.dataset['scheme'] = isDark ? 'dark' : 'light');
 
-        if(parentBody) {
+        let observer;
+        const applyParentScheme = () => {
+          if (observer) observer.disconnect();
+          const scheme = getSchemeInParent();
+          if (scheme) {
+            const sync = () => setScheme(scheme.getAttribute('data-scheme') === 'dark');
+            sync();
+            observer = new MutationObserver(sync);
+            observer.observe(scheme, { attributes: true, attributeFilter: ['data-scheme'] });
+          }
+        };
+
+        if (getSchemeInParent()) {
           // if same-domain, observe colour scheme preference.
-          setScheme(parentBody.getAttribute('data-scheme')==='dark')
-          new MutationObserver(() => setScheme(parentBody.getAttribute('data-scheme')==='dark'))
-            .observe(parentBody, { attributes: true, attributeFilter: ['data-scheme'] });
+          applyParentScheme();
+          parent.window.addEventListener('odyssey:api', update);
         } else {
           // x-domain uses prefers-colour-scheme & hard-codes the background colour
           // this may be wrong if the user has set a preference (in app/preview).
-          doc.dataset['background'] = 'force'
+          doc.dataset['background'] = 'force';
 
           // newsapp background is black
-          if(document.referrer.includes('newsapp.')){
+          if (document.referrer.includes('newsapp.')) {
             doc.style.setProperty('--background', 'black');
           }
           setScheme(window.matchMedia('(prefers-color-scheme: dark)').matches);
-          window.matchMedia('(prefers-color-scheme: dark)')
-            .addEventListener('change', (e) => setScheme(e.matches));
+          window.matchMedia('(prefers-color-scheme: dark)').addEventListener('change', (e) => setScheme(e.matches));
         }
       })();
     </script>
