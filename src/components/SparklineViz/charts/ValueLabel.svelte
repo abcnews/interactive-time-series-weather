@@ -41,16 +41,10 @@
   div {
     position: absolute;
     font-weight: bold;
-    color: #000;
     font-size: 0.875rem;
     transform: translate(-50%, calc(-100% - 10px));
     line-height: 1.1;
     white-space: nowrap;
-    text-shadow:
-      -1px -1px 0 white,
-      1px -1px 0 white,
-      -1px 1px 0 white,
-      1px 1px 0 white;
   }
 
   .highlight {
@@ -59,9 +53,10 @@
 
   .tooltip {
     text-align: center;
-    background: white;
     padding: 3px;
     border-radius: 2px;
+    background: white;
+    color: black;
   }
 
   .below {

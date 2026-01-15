@@ -211,10 +211,8 @@
 
   .attribution {
     font-family: ABCSans;
-    color: #333;
-    background: #fff;
     border-radius: 1000px;
-    padding: 2px 0.75rem;
+    padding: 2px 0;
     display: inline-block;
   }
 </style>

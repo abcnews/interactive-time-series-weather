@@ -99,7 +99,7 @@
 <!-- This is a bubbled click handler to remove labels for touch events that have suitable alt text in the Observations <ol> -->
 <!-- svelte-ignore a11y_click_events_have_key_events -->
 <!-- svelte-ignore a11y_no_static_element_interactions -->
-<div class="weather-chart" {onclick}>
+<div class="chart" {onclick}>
   <h2>{name}</h2>
   <div role="figure" class="chart" aria-label={altText}>
     {#if data.length > 0}
@@ -157,7 +157,7 @@
 </div>
 
 <style>
-  .weather-chart {
+  .chart {
     font-family: ABCSans;
     position: relative;
     z-index: 2;
@@ -165,11 +165,9 @@
   h2 {
     display: inline-block;
     margin: 0;
-    padding: 2px 0.75rem;
+    padding: 2px 0;
     font-size: 1.125rem;
     font-weight: bold;
-    color: #333;
-    background: #fff;
     border-radius: 1000px;
   }
   @media (min-width: 48em) {
