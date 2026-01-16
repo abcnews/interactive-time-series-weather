@@ -7,7 +7,10 @@
   const defaultParams = new URLSearchParams(location.hash.slice(1));
 
   let locations = $state(
-    (defaultParams.get('locations') || 'Brisbane,Sydney,Melbourne,Adelaide,Perth,Darwin,Canberra,Hobart')
+    (
+      defaultParams.get('locations') ||
+      'Brisbane,Fort+Denison,Melbourne+Airport,Adelaide+Airport,Perth+Airport,Darwin+Ntc+Aws,Canberra+Airport,Hobart+(Ellerslie+Road)'
+    )
       .split(',')
       .filter(Boolean)
   );
@@ -19,6 +22,12 @@
     defaultParams.get('startDate') || new Date(Date.now() - 1000 * 60 * 60 * 24 * 5).toISOString().substring(0, 10)
   );
   let endDate = $state(defaultParams.get('endDate') || new Date().toISOString().substring(0, 10));
+
+  let validLocations = $derived(
+    locationOptions.length > 0
+      ? locations.filter(loc => locationOptions.some(opt => opt.value === loc.split('|')[0]))
+      : locations
+  );
 
   function bulkPasteLocations() {
     const input = prompt('Paste locations one per line (e.g. from a spreadsheet)', locations.join('\n'));
@@ -80,6 +89,11 @@
   });
 
   $effect(() => {
+    if (validLocations.length !== locations.length) {
+      locations = validLocations;
+      return;
+    }
+
     const params = new URLSearchParams();
     params.append('locations', locations.join());
     params.append('viz', vizType);
