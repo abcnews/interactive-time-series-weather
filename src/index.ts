@@ -3,6 +3,9 @@ import { whenDOMReady } from '@abcnews/env-utils';
 import { getMountValue, selectMounts } from '@abcnews/mount-utils';
 import { mount } from 'svelte';
 import Sparklines from './components/Sparklines/Sparklines.svelte';
+import { initDarkModeIframe } from '@abcnews/components-storylab';
+
+initDarkModeIframe();
 
 whenDOMReady.then(async () => {
   const [sparklineMountEl] = selectMounts('interactivetimeseriesweathersparkline');
