@@ -3,6 +3,7 @@
   import { onMount } from 'svelte';
   import { LOCATIONS_URL } from '../util';
   import Sparklines from '../Sparklines/Sparklines.svelte';
+  import LocationPicker from './LocationPicker.svelte';
   const defaultParams = new URLSearchParams(location.hash.slice(1));
 
   let locations = $state(
@@ -84,7 +85,7 @@
     params.append('viz', vizType);
     params.append('startDate', startDate);
     params.append('endDate', endDate);
-    window.location.hash = params.toString();
+    window.location.hash = params.toString().replace(/%7C/g, '|').replace(/%2C/g, ',');
   });
 
   let iframeUrl = $derived.by(
@@ -130,12 +131,13 @@
     <legend>Locations</legend>
     <small>
       Note that not all locations will have data. The builder doesn't let you rearrange locations, but you can edit the
-      URL and refresh the page.
+      URL and refresh the page. <br /> <br /> Locations are in <code>Weather Station (Aurora Location)</code> format. You
+      can rename them with the edit button.
     </small>
     {#if isLoading}
       <Loader />
     {:else}
-      <Typeahead
+      <LocationPicker
         disabled={isLoading}
         values={locationOptions}
         value={locations}

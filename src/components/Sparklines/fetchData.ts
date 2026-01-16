@@ -54,13 +54,16 @@ export async function fetchData({
 
   return (
     locations
-      // find location name
-      .map(location => geojson.features.find(feature => feature.properties.name === location))
-      .filter(feature => feature && locations.includes(feature.properties.name))
+      .map(location => {
+        const [name, override] = location.split('|');
+        const feature = geojson.features.find(f => f.properties.name === name);
+        return { feature, name: override || name };
+      })
+      .filter(({ feature }) => !!feature)
 
       // transform multiple days into one {x,y}[] chart format
-      .map(feature => {
-        const auroraId = feature.properties.auroraId;
+      .map(({ feature, name }) => {
+        const auroraId = feature!.properties.auroraId;
 
         const chartData: { x: number; y: number }[] = [];
         datasets.forEach(dataset => {
@@ -79,7 +82,7 @@ export async function fetchData({
         });
 
         return {
-          name: feature.properties.name,
+          name,
           chartData
         };
       })

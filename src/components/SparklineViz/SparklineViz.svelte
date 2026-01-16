@@ -127,10 +127,13 @@
   let displayCharts = $derived(
     charts.length > 0
       ? charts
-      : placeholders.map(name => ({
-          name,
-          chartData: []
-        }))
+      : placeholders.map(placeholder => {
+          const [name, override] = placeholder.split('|');
+          return {
+            name: override || name,
+            chartData: []
+          };
+        })
   );
 
   $effect(() => {
