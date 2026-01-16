@@ -22,6 +22,7 @@
     defaultParams.get('startDate') || new Date(Date.now() - 1000 * 60 * 60 * 24 * 5).toISOString().substring(0, 10)
   );
   let endDate = $state(defaultParams.get('endDate') || new Date().toISOString().substring(0, 10));
+  let scheme = $state(defaultParams.get('scheme') || 'auto');
 
   let validLocations = $derived(
     locationOptions.length > 0
@@ -99,6 +100,9 @@
     params.append('viz', vizType);
     params.append('startDate', startDate);
     params.append('endDate', endDate);
+    if (scheme !== 'auto') {
+      params.append('scheme', scheme);
+    }
     window.location.hash = params.toString().replace(/%7C/g, '|').replace(/%2C/g, ',');
   });
 
@@ -108,8 +112,8 @@
 </script>
 
 {#snippet Viz()}
-  <div class="frame">
-    {#key locations.join() + startDate + endDate}
+  <div class="frame" data-scheme={scheme === 'auto' ? null : scheme}>
+    {#key locations.join() + startDate + endDate + scheme}
       <Sparklines {vizType} {locations} {startDate} {endDate} />
     {/key}
   </div>
@@ -181,6 +185,24 @@
     <button onclick={bulkPasteLocations}>Bulk paste locations</button>
     <button onclick={loadFromIframeUrl}>Load from iframe URL</button>
   </fieldset>
+  <fieldset>
+    <legend>Colour scheme</legend>
+    <small>Leave this on Auto unless you're embedding in an Odyssey.</small>
+    <div class="radio-group">
+      <label>
+        <input type="radio" name="scheme" value="auto" bind:group={scheme} />
+        Auto
+      </label>
+      <label>
+        <input type="radio" name="scheme" value="dark" bind:group={scheme} />
+        Dark
+      </label>
+      <label>
+        <input type="radio" name="scheme" value="light" bind:group={scheme} />
+        Light
+      </label>
+    </div>
+  </fieldset>
   <UpdateChecker />
 {/snippet}
 
@@ -195,6 +217,17 @@
     border: 0;
     position: relative;
     overflow: auto;
+    padding: 1rem;
+    border-radius: 1rem;
+
+    &[data-scheme='dark'] {
+      background: #121212;
+      color: #eee;
+    }
+    &[data-scheme='light'] {
+      background: #fff;
+      color: #000;
+    }
   }
 
   .chart-type label {
