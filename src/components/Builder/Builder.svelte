@@ -4,12 +4,13 @@
   import { LOCATIONS_URL } from '../util';
   import Sparklines from '../Sparklines/Sparklines.svelte';
   import LocationPicker from './LocationPicker.svelte';
+  import GeoLocationPicker from './GeoLocationPicker/GeoLocationPicker.svelte';
   const defaultParams = new URLSearchParams(location.hash.slice(1));
 
   let locations = $state(
     (
       defaultParams.get('locations') ||
-      'Brisbane,Fort+Denison,Melbourne+Airport,Adelaide+Airport,Perth+Airport,Darwin+Ntc+Aws,Canberra+Airport,Hobart+(Ellerslie+Road)'
+      'Brisbane,Fort Denison,Melbourne Airport,Adelaide Airport,Perth Airport,Darwin Airport,Canberra Airport,Hobart (Ellerslie Road)'
     )
       .split(',')
       .filter(Boolean)
@@ -23,6 +24,7 @@
   );
   let endDate = $state(defaultParams.get('endDate') || new Date().toISOString().substring(0, 10));
   let scheme = $state(defaultParams.get('scheme') || 'auto');
+  let geojson = $state();
 
   let validLocations = $derived(
     locationOptions.length > 0
@@ -71,7 +73,7 @@
     // Fetch locations data
     try {
       const response = await fetch(LOCATIONS_URL);
-      const geojson = await response.json();
+      geojson = await response.json();
 
       // Transform geojson features into Typeahead format
       locationOptions = geojson.features
@@ -109,6 +111,7 @@
   let iframeUrl = $derived.by(
     () => `https://${location.host}${location.pathname.replace(/\/builder\/?/, '/')}?${hash}&abcnewsembedheight=600`
   );
+  $effect(() => console.log('locations', locations));
 </script>
 
 {#snippet Viz()}
@@ -184,6 +187,8 @@
     <legend>Tools</legend>
     <button onclick={bulkPasteLocations}>Bulk paste locations</button>
     <button onclick={loadFromIframeUrl}>Load from iframe URL</button>
+
+    <GeoLocationPicker {geojson} onClick={newLocations => (locations = newLocations)} {locations} />
   </fieldset>
   <fieldset>
     <legend>Colour scheme</legend>
