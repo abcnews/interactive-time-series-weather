@@ -147,8 +147,6 @@
     if (status === 'inview') {
       untrack(async () => {
         const result = await loadData();
-        console.log({ charts });
-
         charts = result.charts;
         $rawData = charts;
 

@@ -14,9 +14,6 @@ export type ChartData = {
  */
 async function fetchChunkedData(dataBaseUrl: string, { startDate = '', endDate = '' }) {
   const distanceDays = (Number(new Date(endDate)) - Number(new Date(startDate))) / 1000 / 60 / 60 / 24;
-  if (distanceDays > 14 || distanceDays < 0) {
-    throw new Error('Dates out of range');
-  }
   const filenames = Array.from({ length: distanceDays + 1 })
     .map((_, i) => new Date(Number(new Date(startDate)) + i * 24 * 60 * 60 * 1000))
     .map(date => `${date.toISOString().slice(0, 10)}`);

@@ -26,6 +26,13 @@
   let endDate = $state(defaultParams.get('endDate') || new Date().toISOString().substring(0, 10));
   let scheme = $state(defaultParams.get('scheme') || 'auto');
   let geojson = $state();
+  let daysDifference = $derived.by(() => {
+    if (!startDate || !endDate) return 0;
+    const start = new Date(startDate);
+    const end = new Date(endDate);
+    const diffTime = end.getTime() - start.getTime();
+    return Math.ceil(diffTime / (1000 * 60 * 60 * 24));
+  });
 
   let validLocations = $derived(
     locationOptions.length > 0
@@ -218,6 +225,11 @@
       End date
       <input type="date" min="2026-01-02" bind:value={endDate} />
     </label>
+    {#if daysDifference > 14}
+      <small class="warning">
+        ⚠️ Warning: Date range is &gt;2 weeks. Large date ranges will cause slow loading and excessive data transfers.
+      </small>
+    {/if}
   </fieldset>
   <fieldset>
     <legend>Iframe url</legend>
@@ -277,5 +289,10 @@
 
   .chart-type label {
     white-space: nowrap;
+  }
+
+  .warning {
+    color: #d73a49;
+    font-weight: bold;
   }
 </style>
