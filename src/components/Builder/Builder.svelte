@@ -5,6 +5,7 @@
   import Sparklines from '../Sparklines/Sparklines.svelte';
   import LocationPicker from './LocationPicker.svelte';
   import GeoLocationPicker from './GeoLocationPicker/GeoLocationPicker.svelte';
+  import { rawData } from '../SparklineViz/charts/lib/stores';
   const defaultParams = new URLSearchParams(location.hash.slice(1));
 
   let locations = $state(
@@ -111,7 +112,46 @@
   let iframeUrl = $derived.by(
     () => `https://${location.host}${location.pathname.replace(/\/builder\/?/, '/')}?${hash}&abcnewsembedheight=600`
   );
-  $effect(() => console.log('locations', locations));
+
+  function csvExport() {
+    const data = $rawData;
+    if (!data || data.length === 0) {
+      alert('No data available to export');
+      return;
+    }
+
+    // Get all unique timestamps (x values) across all locations
+    const timestamps = Array.from(new Set(data.flatMap(d => d.chartData.map(p => p.x)))).sort((a, b) => a - b);
+
+    // Create header row
+    const headers = ['Date', ...data.map(d => d.name)];
+    const rows = [headers];
+
+    // Create data rows
+    timestamps.forEach(ts => {
+      const date = new Date(ts);
+      const row = [`${date.toLocaleDateString()} ${date.toLocaleTimeString()}`];
+      data.forEach(locationData => {
+        const point = locationData.chartData.find(p => p.x === ts);
+        row.push(point ? point.y.toString() : '');
+      });
+      rows.push(row);
+    });
+
+    // Convert to CSV string
+    const csvContent = rows.map(row => row.map(cell => `"${cell.replace(/"/g, '""')}"`).join(',')).join('\n');
+
+    // Trigger download
+    const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+    const url = URL.createObjectURL(blob);
+    const link = document.createElement('a');
+    link.setAttribute('href', url);
+    link.setAttribute('download', `weather-data-${vizType}-${startDate}-to-${endDate}.csv`);
+    link.style.visibility = 'hidden';
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+  }
 </script>
 
 {#snippet Viz()}
@@ -187,8 +227,8 @@
     <legend>Tools</legend>
     <button onclick={bulkPasteLocations}>Bulk paste locations</button>
     <button onclick={loadFromIframeUrl}>Load from iframe URL</button>
-
     <GeoLocationPicker {geojson} onClick={newLocations => (locations = newLocations)} {locations} />
+    <button onclick={csvExport}>Export as CSV</button>
   </fieldset>
   <fieldset>
     <legend>Colour scheme</legend>

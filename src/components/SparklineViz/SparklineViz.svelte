@@ -4,6 +4,7 @@
   import { emitResize } from '../util';
   import { calculateDomain } from './charts/lib/utils';
   import { untrack } from 'svelte';
+  import { rawData } from './charts/lib/stores';
 
   /**
    * Props for the SparklineViz component.
@@ -146,7 +147,10 @@
     if (status === 'inview') {
       untrack(async () => {
         const result = await loadData();
+        console.log({ charts });
+
         charts = result.charts;
+        $rawData = charts;
 
         // Store overrides from the result
         overrides = {

@@ -3,6 +3,15 @@ import { derived, readable, writable } from 'svelte/store';
 import type { ObservationType } from './data';
 import { metricProperties, TUE_5PM } from './constants';
 
+export const rawData = writable<
+  Array<{
+    /** The name of the chart (e.g., location name) */
+    name: string;
+    /** Array of data points for the chart */
+    chartData: Array<{ x: number; y: number }>;
+  }>
+>();
+
 export const now = readable(Date.now(), set => {
   set(Math.min(Date.now(), TUE_5PM));
 
