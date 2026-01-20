@@ -28,7 +28,8 @@
 		"@abcnews/aunty": "^16.0.1",
 		"@testing-library/svelte": "^5.2.9",
 		"@types/jest": "^30.0.0",
-		"@types/webpack-env": "^1.18.8"
+		"@types/webpack-env": "^1.18.8",
+		"maplibre-gl": "^5.16.0"
 	},
 	"dependencies": {
 		"@abcnews/alternating-case-to-object": "^3.2.0",
