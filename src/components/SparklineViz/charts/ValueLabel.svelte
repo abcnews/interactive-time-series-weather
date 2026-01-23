@@ -49,6 +49,12 @@
 
   .highlight {
     font-size: 1rem;
+    --shadow: white;
+    -webkit-text-stroke: 3px var(--shadow);
+    paint-order: markers stroke fill;
+    :global([data-scheme='dark']) & {
+      --shadow: black;
+    }
   }
 
   .tooltip {
@@ -61,6 +67,12 @@
 
   .below {
     transform: translate(-50%, 10px);
+    --shadow: white;
+    -webkit-text-stroke: 3px var(--shadow);
+    paint-order: markers stroke fill;
+    :global([data-scheme='dark']) & {
+      --shadow: black;
+    }
   }
 
   time {
