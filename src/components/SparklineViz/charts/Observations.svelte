@@ -110,6 +110,6 @@
     position: absolute;
     top: 0;
     left: 0;
-    touch-action: none; /* Prevent scroll interference if desired, or pan-y */
+    touch-action: pan-y;
   }
 </style>
