@@ -74,6 +74,7 @@
 <div
   class="interaction-layer"
   role="presentation"
+  onpointerdown={handlePointerMove}
   onpointermove={handlePointerMove}
   onpointerleave={handlePointerLeave}
   style:width="100%"
