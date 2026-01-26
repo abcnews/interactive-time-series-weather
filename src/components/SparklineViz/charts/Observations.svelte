@@ -60,7 +60,7 @@
   }
 
   function handlePointerLeave(event: PointerEvent) {
-    // Signal that we are handling this leave event (logic copied from original Observation component)
+    // Signal that we are handling this leave event
     $observationHandlingLeave = true;
 
     // Don't call onleave for touch events so touch devices can see labels
