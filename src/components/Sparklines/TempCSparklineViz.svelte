@@ -1,21 +1,19 @@
 <script lang="ts">
-  import { interpolateRgbBasis } from 'd3-interpolate';
-  import { scaleSequential } from 'd3-scale';
   import SparklineViz from '../SparklineViz/SparklineViz.svelte';
   import { fetchData, type ChartData } from './fetchData';
+  import { metricProperties } from '../SparklineViz/charts/lib/constants';
 
   let { locations = ['Brisbane', 'Sydney', 'Melbourne', 'Adelaide'], startDate = '', endDate = '' } = $props();
 
   // Temperature-specific configuration
   const yDomain: [number, number] = [10, 45];
-  const gradientColors = ['#779E00', '#DB7C00', '#F53500'];
+  const colour = metricProperties.tempc.colour;
   const formatValue = (v: number) => `${v.toFixed(1)}°C`;
-  const gradientScale = scaleSequential(yDomain, interpolateRgbBasis(gradientColors));
 </script>
 
 <SparklineViz
   placeholders={locations}
-  loadData={async (): Promise<{ charts: ChartData[] }> => {
+  loadData={async () => {
     const charts = await fetchData({
       dataBaseUrl: 'https://abcnewsdata.sgp1.digitaloceanspaces.com/data-time-series-weather/assets/tempC',
       locations,
@@ -26,6 +24,7 @@
   }}
   {formatValue}
   {yDomain}
-  {gradientScale}
+  {colour}
+  darkColour={metricProperties.tempc.darkColour}
   attribution="Times shown in user's local time. Source: MetraWeather."
 />

@@ -30,10 +30,12 @@
       yDomain?: [number, number];
       /** Optional override for x-axis domain */
       xDomain?: [number, number];
-      /** Optional override for gradient scale function */
-      gradientScale?: (value: number) => string;
       /** Optional override for value formatting function */
       formatValue?: (value: number) => string;
+      /** Optional override for solid colour */
+      colour?: string;
+      /** Optional override for dark mode solid colour */
+      darkColour?: string;
     }>;
 
     /**
@@ -54,7 +56,16 @@
     /**
      * Scale function for mapping values to colors.
      */
-    gradientScale?: (value: number) => string;
+
+    /**
+     * Solid colour for the chart.
+     */
+    colour?: string;
+
+    /**
+     * Solid colour for the chart in dark mode.
+     */
+    darkColour?: string;
 
     /**
      * Free text attribution to display below the charts.
@@ -68,7 +79,8 @@
     formatValue: formatValueProp,
     yDomain: yDomainProp,
     xDomain: xDomainProp,
-    gradientScale: gradientScaleProp,
+    colour: colourProp,
+    darkColour: darkColourProp,
     attribution
   }: SparklineVizProps = $props();
 
@@ -85,12 +97,14 @@
   let overrides = $state<{
     yDomain?: [number, number];
     xDomain?: [number, number];
-    gradientScale?: (value: number) => string;
     formatValue?: (value: number) => string;
+    colour?: string;
+    darkColour?: string;
   }>({});
 
   let formatValue = $derived(overrides.formatValue ?? formatValueProp);
-  let gradientScale = $derived(overrides.gradientScale ?? gradientScaleProp);
+  let colour = $derived(overrides.colour ?? colourProp);
+  let darkColour = $derived(overrides.darkColour ?? darkColourProp);
 
   let yDomain = $derived.by<[number, number]>(() => {
     // Use override if provided
@@ -154,8 +168,9 @@
         overrides = {
           yDomain: result.yDomain,
           xDomain: result.xDomain,
-          gradientScale: result.gradientScale,
-          formatValue: result.formatValue
+          formatValue: result.formatValue,
+          colour: result.colour,
+          darkColour: result.darkColour
         };
       });
     }
@@ -164,6 +179,8 @@
 
 <div
   class="app"
+  style:--weather-viz-colour={colour}
+  style:--weather-viz-dark-colour={darkColour}
   bind:clientHeight
   use:intersectionObserver={{
     threshold: 0.1,
@@ -182,7 +199,7 @@
           {formatValue}
           {yDomain}
           {xDomain}
-          {gradientScale}
+          colour="var(--weather-viz-metric-colour)"
         />
       </div>
     {/each}
@@ -206,6 +223,13 @@
   }
   .app {
     overflow: hidden;
+    --weather-viz-metric-colour: var(--weather-viz-colour);
+  }
+  :global([data-scheme='dark']) .app {
+    --weather-viz-metric-colour: var(--weather-viz-dark-colour);
+  }
+  :global([data-scheme='light']) .app {
+    --weather-viz-metric-colour: var(--weather-viz-colour);
   }
   .charts {
     display: flex;

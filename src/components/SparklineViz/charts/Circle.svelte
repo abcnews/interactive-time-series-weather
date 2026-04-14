@@ -1,13 +1,19 @@
-<script>
+<script lang="ts">
   /**
-   * @file Renders a data point as an SVG circle with color based on the metric value.
+   * @file Renders a data point as an SVG circle with color based on the metric value or a provided solid colour.
    */
 
   import { getContext } from 'svelte';
 
-  export let data;
+  let { data } = $props();
 
-  const { xGet, yGet, y, custom } = getContext('LayerCake');
+  const { xGet, yGet } = getContext<any>('LayerCake');
 </script>
 
-<circle cx={$xGet(data)} cy={$yGet(data)} r="4.5" fill={$custom.gradientScale($y(data))} />
+<circle cx={$xGet(data)} cy={$yGet(data)} r="4.5" class="chart-point" />
+
+<style>
+  .chart-point {
+    fill: var(--weather-viz-metric-colour);
+  }
+</style>

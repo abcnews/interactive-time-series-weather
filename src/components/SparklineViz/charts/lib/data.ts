@@ -60,7 +60,7 @@ export const MetricSchema = union([
   literal('gust'),
   literal('rain'),
   literal('swell'),
-  literal('bomtemp'),
-  literal('humidity')
+  literal('humidity'),
+  literal('tempc')
 ]);
 export type MetricType = InferOutput<typeof MetricSchema>;

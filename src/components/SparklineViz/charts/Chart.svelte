@@ -11,6 +11,7 @@
   import Line from './Line.svelte';
   import Area from './Area.svelte';
   import Circle from './Circle.svelte';
+  import Gradient from './Gradient.svelte';
   import ValueLabel from './ValueLabel.svelte';
   import Observations from './Observations.svelte';
   import { padding } from './lib/constants';
@@ -35,8 +36,8 @@
     yDomain?: [number, number];
     /** Sets explicit x-axis bounds. When omitted, bounds are calculated from data min/max */
     xDomain?: [number, number];
-    /** D3 scale for mapping values to gradient colors */
-    gradientScale: any;
+    /** Solid colour for the chart */
+    colour?: string;
   }
 
   let {
@@ -55,7 +56,7 @@
     },
     yDomain,
     xDomain,
-    gradientScale
+    colour
   }: Props = $props();
 
   // Generate a slug for unique gradient IDs
@@ -66,7 +67,6 @@
   // Use provided yDomain if available, otherwise calculate from local data
   let minValue = $derived(Math.min(...values));
   let maxValue = $derived(Math.max(...values));
-  let midValue = $derived(minValue + (maxValue - minValue) / 2);
 
   // Calculate primary and secondary data points
   let primaryPoint = $derived(data.length > 0 ? data.reduce((max, d) => (d.y > max.y ? d : max), data[0]) : null);
@@ -74,6 +74,8 @@
   let hideSecondaryLabel = $derived(
     primaryPoint && secondaryPoint && Math.abs(data.indexOf(primaryPoint) - data.indexOf(secondaryPoint)) < 6
   );
+
+  let isActiveObservation = $derived($activeObservation !== null && data.includes($activeObservation as any));
 
   // Format functions
   function formatAriaLabel(d: DataPoint): string {
@@ -103,23 +105,12 @@
   <h2>{name}</h2>
   <div role="figure" class="chart" aria-label={altText}>
     {#if data.length > 0}
-      <LayerCake {data} {padding} x={d => d.x} y={d => d.y} {yDomain} {xDomain} custom={{ gradientScale, formatValue }}>
+      <LayerCake {data} {padding} x={d => d.x} y={d => d.y} {yDomain} {xDomain} custom={{ formatValue }}>
         <Svg>
           <Area fill={`url('#gradient-shade-${slug}')`} />
-          <Line stroke={`url('#gradient-${slug}')`} />
-          <defs>
-            <linearGradient id="gradient-{slug}" gradientTransform="rotate(90)">
-              <stop offset="0%" stop-color={gradientScale(maxValue)} />
-              <stop offset="50%" stop-color={gradientScale(midValue)} />
-              <stop offset="100%" stop-color={gradientScale(minValue)} />
-            </linearGradient>
-            <linearGradient id="gradient-shade-{slug}" gradientTransform="rotate(90)">
-              <stop offset="0%" stop-color={gradientScale(yDomain[1])} />
-              <stop offset="50%" stop-color={gradientScale(yDomain[1] - yDomain[0])} />
-              <stop offset="100%" stop-color={gradientScale(yDomain[0])} />
-            </linearGradient>
-          </defs>
-          {#if $activeObservation !== null && data.includes($activeObservation as any)}
+          <Line />
+          <Gradient id="gradient-shade-{slug}" {colour} />
+          {#if isActiveObservation}
             <Circle data={$activeObservation} />
           {:else if primaryPoint}
             <Circle data={primaryPoint} />
@@ -129,7 +120,7 @@
           {/if}
         </Svg>
         <Html>
-          {#if $activeObservation !== null && data.includes($activeObservation as any)}
+          {#if isActiveObservation}
             <div role="tooltip" id="tooltip">
               <ValueLabel
                 data={$activeObservation}

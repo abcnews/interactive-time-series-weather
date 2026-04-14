@@ -38,6 +38,13 @@
 </div>
 
 <style>
+  :global([data-scheme='dark']) {
+    --weather-viz-valuelabel-stroke-shadow: black;
+  }
+  :global([data-scheme='light']) {
+    --weather-viz-valuelabel-stroke-shadow: white;
+  }
+
   div {
     position: absolute;
     font-weight: bold;
@@ -49,12 +56,9 @@
 
   .highlight {
     font-size: 1rem;
-    --shadow: white;
+    --shadow: var(--weather-viz-valuelabel-stroke-shadow, white);
     -webkit-text-stroke: 3px var(--shadow);
     paint-order: markers stroke fill;
-    :global([data-scheme='dark']) & {
-      --shadow: black;
-    }
   }
 
   .tooltip {
@@ -67,12 +71,9 @@
 
   .below {
     transform: translate(-50%, 10px);
-    --shadow: white;
+    --shadow: var(--weather-viz-valuelabel-stroke-shadow, white);
     -webkit-text-stroke: 3px var(--shadow);
     paint-order: markers stroke fill;
-    :global([data-scheme='dark']) & {
-      --shadow: black;
-    }
   }
 
   time {
