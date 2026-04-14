@@ -7,6 +7,7 @@
    */
 
   import { Html, LayerCake, Svg } from 'layercake';
+  import { scaleLinear } from 'd3-scale';
   import { activeObservation, observationHandlingLeave } from './lib/stores';
   import Line from './Line.svelte';
   import Area from './Area.svelte';
@@ -76,6 +77,18 @@
   );
 
   let isActiveObservation = $derived($activeObservation !== null && data.includes($activeObservation as any));
+  let activeDataPoint = $derived(isActiveObservation ? ($activeObservation as any as DataPoint) : null);
+
+  $effect(() => {
+    console.log(`[Chart:${name}] data extremes:`, {
+      minX: data.length > 0 ? Math.min(...data.map(d => d.x)) : null,
+      maxX: data.length > 0 ? Math.max(...data.map(d => d.x)) : null,
+      minY: data.length > 0 ? Math.min(...data.map(d => d.y)) : null,
+      maxY: data.length > 0 ? Math.max(...data.map(d => d.y)) : null
+    });
+    console.log(`[Chart:${name}] yDomain:`, yDomain);
+    console.log(`[Chart:${name}] xDomain:`, xDomain);
+  });
 
   // Format functions
   function formatAriaLabel(d: DataPoint): string {
@@ -103,9 +116,18 @@
 <!-- svelte-ignore a11y_no_static_element_interactions -->
 <div class="chart" {onclick}>
   <h2>{name}</h2>
-  <div role="figure" class="chart" aria-label={altText}>
+  <div role="figure" class="chart__figure" aria-label={altText}>
     {#if data.length > 0}
-      <LayerCake {data} {padding} x={d => d.x} y={d => d.y} {yDomain} {xDomain} custom={{ formatValue }}>
+      <LayerCake
+        {data}
+        {padding}
+        x={d => d.x}
+        y={d => d.y}
+        {yDomain}
+        {xDomain}
+        yScale={scaleLinear().clamp(true)}
+        custom={{ formatValue }}
+      >
         <Svg>
           <Area fill={`url('#gradient-shade-${slug}')`} />
           <Line />
@@ -120,12 +142,12 @@
           {/if}
         </Svg>
         <Html>
-          {#if isActiveObservation}
+          {#if isActiveObservation && activeDataPoint}
             <div role="tooltip" id="tooltip">
               <ValueLabel
-                data={$activeObservation}
-                value={formatValue(($activeObservation as any).y)}
-                timeDisplay={formatTime($activeObservation as any)}
+                data={activeDataPoint}
+                value={formatValue(activeDataPoint.y)}
+                timeDisplay={formatTime(activeDataPoint)}
                 showTime={true}
               />
             </div>
@@ -153,6 +175,14 @@
     position: relative;
     z-index: 2;
   }
+  .chart__figure {
+    width: 100%;
+    height: 100px;
+    overflow: hidden;
+    :global(svg) {
+      animation: fadeIn 0.25s;
+    }
+  }
   h2 {
     display: inline-block;
     margin: 0;
@@ -164,13 +194,6 @@
   @media (min-width: 48em) {
     h2 {
       font-size: 1.25rem;
-    }
-  }
-  .chart {
-    width: 100%;
-    height: 100px;
-    :global(svg) {
-      animation: fadeIn 0.25s;
     }
   }
   @keyframes fadeIn {

@@ -11,6 +11,7 @@
 
 <SparklineViz
   placeholders={locations}
+  metric="rain"
   loadData={async () => {
     const charts = await fetchData({
       dataBaseUrl:

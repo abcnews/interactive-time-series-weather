@@ -5,9 +5,18 @@
 
   import { getContext } from 'svelte';
 
-  const { data, xGet, yGet } = getContext<any>('LayerCake');
+  const { data, xGet, yGet, width, height } = getContext<any>('LayerCake');
 
   let path = $derived('M' + $data.map((d: any) => $xGet(d) + ',' + $yGet(d)).join('L'));
+
+  $effect(() => {
+    console.log('[Line] Dimensions:', { width: $width, height: $height });
+    const yValues = $data.map((d: any) => $yGet(d));
+    const outOfBounds = yValues.filter((y: number) => y < 0 || y > $height);
+    if (outOfBounds.length > 0) {
+      console.warn('[Line] Points out of bounds:', outOfBounds);
+    }
+  });
 </script>
 
 <path class="path-line" d={path}></path>

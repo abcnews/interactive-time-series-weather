@@ -13,6 +13,7 @@
 
 <SparklineViz
   placeholders={locations}
+  metric="tempc"
   loadData={async () => {
     const charts = await fetchData({
       dataBaseUrl: 'https://abcnewsdata.sgp1.digitaloceanspaces.com/data-time-series-weather/assets/tempC',
