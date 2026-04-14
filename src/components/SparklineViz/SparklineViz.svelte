@@ -90,9 +90,10 @@
     metric
   }: SparklineVizProps = $props();
 
-  // Synchronize extents across instances via BroadcastChannel if a metric is provided
+  // Internal utility for synchronizing domains across instances
   let sharedExtents = $state<{ y: [number, number]; x: [number, number] } | undefined>();
 
+  // Subscribe to shared extents from the broadcast channel
   $effect(() => {
     if (metric && extentStores[metric]) {
       const unsubscribe = extentStores[metric].subscribe(value => {
@@ -102,6 +103,7 @@
     }
   });
 
+  // Update shared extents based on local data
   $effect(() => {
     if (metric && extentStores[metric] && charts.length > 0) {
       const allYValues = charts.flatMap(chart => chart.chartData.map(point => point.y));
@@ -120,7 +122,6 @@
           Math.max(current?.x[1] ?? -Infinity, localXDomain[1])
         ];
 
-        // Only update if changed
         if (
           current?.y[0] === nextY[0] &&
           current?.y[1] === nextY[1] &&
@@ -134,6 +135,39 @@
       });
     }
   });
+
+  /**
+   * Internal helper to calculate the domain for either X or Y axis.
+   */
+  function calculateBaseDomain(key: 'x' | 'y', padding: number) {
+    const propDomain = key === 'x' ? xDomainProp : yDomainProp;
+    const overrideDomain = key === 'x' ? overrides.xDomain : overrides.yDomain;
+
+    // Determine the baseline domain
+    let baseline: [number, number] = [0, 100];
+
+    if (overrideDomain) {
+      baseline = overrideDomain;
+    } else if (propDomain) {
+      baseline = propDomain;
+    } else if (charts.length > 0) {
+      const values = charts.flatMap(chart => chart.chartData.map(point => point[key]));
+      baseline = calculateDomain(values, padding);
+    }
+
+    // Merge with shared broadcasted extents if available
+    if (sharedExtents?.[key]) {
+      return [
+        Math.min(baseline[0], sharedExtents[key][0]),
+        Math.max(baseline[1], sharedExtents[key][1])
+      ] as [number, number];
+    }
+
+    return baseline;
+  }
+
+  let xDomain = $derived(calculateBaseDomain('x', 0));
+  let yDomain = $derived(calculateBaseDomain('y', 0.1));
 
   let charts = $state<
     Array<{
@@ -156,46 +190,6 @@
   let formatValue = $derived(overrides.formatValue ?? formatValueProp);
   let colour = $derived(overrides.colour ?? colourProp);
   let darkColour = $derived(overrides.darkColour ?? darkColourProp);
-
-  let xDomain = $derived.by<[number, number]>(() => {
-    // Determine the baseline domain
-    let baseline: [number, number] = [0, 100];
-    if (overrides.xDomain) {
-      baseline = overrides.xDomain;
-    } else if (xDomainProp) {
-      baseline = xDomainProp;
-    } else if (charts.length > 0) {
-      const allXValues = charts.flatMap(chart => chart.chartData.map(point => point.x));
-      baseline = calculateDomain(allXValues, 0);
-    }
-
-    // Merge with shared extents if available
-    if (sharedExtents?.x) {
-      return [Math.min(baseline[0], sharedExtents.x[0]), Math.max(baseline[1], sharedExtents.x[1])];
-    }
-
-    return baseline;
-  });
-
-  let yDomain = $derived.by<[number, number]>(() => {
-    // Determine the baseline domain
-    let baseline: [number, number] = [0, 100];
-    if (overrides.yDomain) {
-      baseline = overrides.yDomain;
-    } else if (yDomainProp) {
-      baseline = yDomainProp;
-    } else if (charts.length > 0) {
-      const allYValues = charts.flatMap(chart => chart.chartData.map(point => point.y));
-      baseline = calculateDomain(allYValues);
-    }
-
-    // Merge with shared extents if available
-    if (sharedExtents?.y) {
-      return [Math.min(baseline[0], sharedExtents.y[0]), Math.max(baseline[1], sharedExtents.y[1])];
-    }
-
-    return baseline;
-  });
 
   // Create a derived version of charts that returns placeholders when data is loading
   let displayCharts = $derived(
