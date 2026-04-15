@@ -7,7 +7,6 @@ import {
   nullable,
   number,
   object,
-  parse,
   pipe,
   string,
   transform,
@@ -43,20 +42,9 @@ const LocationSchema = object({
   observations: array(ObservationSchema)
 });
 
-export const fetchJurisdictionData = async (jurisdiction: string) => {
-  return fetch(
-    window.location.hash === '#debug'
-      ? '/examples.json'
-      : `https://www.abc.net.au/dat/news/wind-tracker-data/${jurisdiction}.json`
-  )
-    .then(res => res.json())
-    .then(d => parse(array(LocationSchema), d));
-};
-
-export type LocationType = InferOutput<typeof LocationSchema>;
 export type ObservationType = InferOutput<typeof ObservationSchema>;
 
-export const MetricSchema = union([
+const MetricSchema = union([
   literal('gust'),
   literal('rain'),
   literal('swell'),

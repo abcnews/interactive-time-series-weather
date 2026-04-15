@@ -1,11 +1,9 @@
 import type { maplibregl } from './maplibre.js';
-export const MAPLIBRE_JS_URL = 'https://www.abc.net.au/res/sites/news-projects/maplibre/v5.x.x-latest/maplibre-gl.js';
-export const MAPLIBRE_CSS_URL = 'https://www.abc.net.au/res/sites/news-projects/maplibre/v5.x.x-latest/maplibre-gl.css';
+const MAPLIBRE_JS_URL = 'https://www.abc.net.au/res/sites/news-projects/maplibre/v5.x.x-latest/maplibre-gl.js';
+const MAPLIBRE_CSS_URL = 'https://www.abc.net.au/res/sites/news-projects/maplibre/v5.x.x-latest/maplibre-gl.css';
 
 /** Colourful style */
 export const STYLE_BRIGHT = 'https://www.abc.net.au/res/sites/news-projects/map-vector-style-bright/style.json';
-/** Grey style */
-export const STYLE_LIGHT = 'https://www.abc.net.au/res/sites/news-projects/map-vector-style-light/style.json';
 
 const promises: Record<string, Promise<void> | undefined> = {};
 

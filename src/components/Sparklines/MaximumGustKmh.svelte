@@ -1,6 +1,6 @@
 <script lang="ts">
   import SparklineViz from '../SparklineViz/SparklineViz.svelte';
-  import { fetchData, type ChartData } from './fetchData';
+  import { fetchData } from './fetchData';
   import { metricProperties } from '../SparklineViz/charts/lib/constants';
 
   let { locations = ['Brisbane', 'Sydney', 'Melbourne', 'Adelaide'], startDate = '', endDate = '' } = $props();

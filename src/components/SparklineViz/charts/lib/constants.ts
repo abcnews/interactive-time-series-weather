@@ -1,9 +1,6 @@
 import type { MetricType } from './data';
 
 export const padding = { top: 25, left: 2, right: 25, bottom: 5 };
-export const HOUR = 1000 * 60 * 60;
-export const WED_8AM = 1741125600000;
-export const TUE_5PM = 1741676400000;
 
 export const metricProperties: Record<MetricType, { colour: string; darkColour: string }> = {
   gust: {

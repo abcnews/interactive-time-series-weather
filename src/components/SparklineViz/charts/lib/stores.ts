@@ -1,7 +1,7 @@
 import { broadcastable } from './broadcastable';
-import { derived, readable, writable } from 'svelte/store';
+import { writable } from 'svelte/store';
 import type { ObservationType } from './data';
-import { metricProperties, TUE_5PM } from './constants';
+import { metricProperties } from './constants';
 
 export const rawData = writable<
   Array<{
@@ -11,26 +11,6 @@ export const rawData = writable<
     chartData: Array<{ x: number; y: number }>;
   }>
 >();
-
-export const now = readable(Date.now(), set => {
-  set(Math.min(Date.now(), TUE_5PM));
-
-  const interval = setInterval(() => {
-    set(Math.min(Date.now(), TUE_5PM));
-  }, 1000);
-
-  return () => clearInterval(interval);
-});
-
-export const hoursAgo24 = derived(now, now => {
-  return now - 1000 * 60 * 60 * 24;
-});
-export const hoursAgo3 = derived(now, now => {
-  return now - 1000 * 60 * 60 * 3;
-});
-export const hoursAgo12 = derived(now, now => {
-  return now - 1000 * 60 * 60 * 12;
-});
 
 export const extentStores = Object.fromEntries(
   Object.keys(metricProperties).map(key => {

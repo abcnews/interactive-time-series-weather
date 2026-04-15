@@ -1,13 +1,3 @@
-// Run a function repeatedly but back off exponentially
-export const backoff = (fn: () => void, interval = 1000) => {
-  const run = () => {
-    fn();
-    setTimeout(run, interval);
-    interval *= 2;
-  };
-  run();
-};
-
 /**
  * Calculate domain bounds from data values with optional padding
  * @param values Array of numeric values

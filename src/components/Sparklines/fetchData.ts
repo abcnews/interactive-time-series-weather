@@ -1,11 +1,6 @@
 import type { LocationsFeatureCollection, TimeSeriesData } from '../../types';
 import { blockingFetch, LOCATIONS_URL } from '../util';
 
-export type ChartData = {
-  name: string;
-  chartData: Array<{ x: number; y: number }>;
-};
-
 /**
  * Data is chunked by day, so when we fetch a date range we must fetch the file
  * for each day individually. For perf reasons let's not select more than 2 wks.
@@ -40,7 +35,7 @@ export async function fetchData({
   dataBaseUrl,
   locations,
   range = { startDate: '2026-01-01', endDate: '2026-01-07' }
-}): Promise<ChartData[]> {
+}): Promise<Array<{ name: string; chartData: Array<{ x: number; y: number }> }>> {
   if (!dataBaseUrl) {
     throw new Error('baseUrl missing');
   }

@@ -24,6 +24,7 @@
 </script>
 
 <div
+  class="value-label"
   bind:clientWidth={width}
   style:left="{Math.min($chartWidth - width / 2, Math.max($xGet(data), width / 2))}px"
   class:below={alignment === 'below'}
@@ -45,7 +46,7 @@
     --weather-viz-valuelabel-stroke-shadow: white;
   }
 
-  div {
+  .value-label {
     position: absolute;
     font-weight: bold;
     font-size: 0.875rem;
