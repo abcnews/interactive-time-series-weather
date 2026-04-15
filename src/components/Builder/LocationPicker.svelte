@@ -20,7 +20,7 @@
   } = $props();
 
   const uniqueId = 'list' + (Math.random() * 10e15).toString(16);
-  let selectedValues = $state<string[]>(value);
+  let selectedValues = $state<string[]>(untrack(() => value));
   let isFocused = $state(false);
   let inputElement = $state<HTMLInputElement>();
   let inputValue = $state('');
