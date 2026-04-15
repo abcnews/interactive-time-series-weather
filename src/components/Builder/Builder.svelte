@@ -7,6 +7,9 @@
   import GeoLocationPicker from './GeoLocationPicker/GeoLocationPicker.svelte';
   import { rawData } from '../SparklineViz/charts/lib/stores';
   const defaultParams = new URLSearchParams(location.hash.slice(1));
+  // Initialize dynamic favicon
+  import faviconUrl from './favicon.svg';
+  import Favicon from '../Favicon/Favicon.svelte';
 
   let locations = $state(
     (
@@ -263,6 +266,7 @@
   <UpdateChecker />
 {/snippet}
 
+<Favicon url={faviconUrl} />
 <BuilderStyleRoot>
   <BuilderFrame {Viz} {Sidebar} />
 </BuilderStyleRoot>
