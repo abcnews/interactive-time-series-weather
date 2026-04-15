@@ -10,6 +10,7 @@
   // Initialize dynamic favicon
   import faviconUrl from './favicon.svg';
   import Favicon from '../Favicon/Favicon.svelte';
+  import { metricProperties } from '../SparklineViz/charts/lib/constants';
 
   let locations = $state(
     (
@@ -176,27 +177,16 @@
   <fieldset class="chart-type">
     <legend>Chart type</legend>
     <div class="radio-group">
-      <label>
-        <input type="radio" name="vizType" value="tempc" bind:group={vizType} />
-        Temperature
-      </label>
-      <label>
-        <input type="radio" name="vizType" value="wind" bind:group={vizType} />
-        Wind (average)
-      </label>
-      <label>
-        <input type="radio" name="vizType" value="gust" bind:group={vizType} />
-        Wind (max gust)
-      </label>
-      <label>
-        <input type="radio" name="vizType" value="rain" bind:group={vizType} />
-        Rainfall since 9am
-      </label>
-      <label>
-        <input type="radio" name="vizType" value="humidity" bind:group={vizType} />
-        Relative Humidity
-      </label>
+      {#each Object.entries(metricProperties) as [key, metric]}
+        <label>
+          <input type="radio" name="vizType" value={key} bind:group={vizType} />
+          {metric.name}
+        </label>{' '}
+      {/each}
     </div>
+    <small>
+      {metricProperties[vizType]?.editorialNotes}
+    </small>
   </fieldset>
   <fieldset>
     <legend>Locations</legend>

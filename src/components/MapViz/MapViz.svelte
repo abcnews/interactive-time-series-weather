@@ -3,6 +3,7 @@
   import { onMount } from 'svelte';
   import SpikeLayer from './SpikeLayer';
   import type { LocationsFeatureCollection, TimeSeriesData } from '../../types';
+  import { BASE_URL } from '../util';
 
   let geojson = $state<LocationsFeatureCollection>({} as LocationsFeatureCollection);
   let data = $state<TimeSeriesData>({} as TimeSeriesData);
@@ -12,9 +13,7 @@
   onMount(async () => {
     const [loadedGeojson, loadedData] = await Promise.all([
       fetch('/au.geo.json').then(res => res.json() as Promise<LocationsFeatureCollection>),
-      fetch('https://abcnewsdata.sgp1.digitaloceanspaces.com/data-time-series-weather/tempc.json').then(
-        res => res.json() as Promise<TimeSeriesData>
-      )
+      fetch(BASE_URL + '/tempc.json').then(res => res.json() as Promise<TimeSeriesData>)
     ]);
     geojson = loadedGeojson;
     data = loadedData;

@@ -48,15 +48,18 @@
 
   .value-label {
     position: absolute;
-    font-weight: bold;
-    font-size: 0.875rem;
     transform: translate(-50%, calc(-100% - 10px));
-    line-height: 1.1;
+    -webkit-text-stroke-width: 1px;
+    -webkit-text-stroke-color: rgba(255, 255, 255, 0.75);
+    font-size: 12px;
+    font-style: normal;
+    font-weight: 400;
+    line-height: 15px; /* 125% */
     white-space: nowrap;
   }
 
   .highlight {
-    font-size: 1rem;
+    font-size: 12px;
     --shadow: var(--weather-viz-valuelabel-stroke-shadow, white);
     -webkit-text-stroke: 3px var(--shadow);
     paint-order: markers stroke fill;

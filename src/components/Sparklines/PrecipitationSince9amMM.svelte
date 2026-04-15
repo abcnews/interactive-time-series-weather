@@ -5,25 +5,23 @@
 
   let { locations = ['Brisbane', 'Sydney', 'Melbourne', 'Adelaide'], startDate = '', endDate = '' } = $props();
 
-  const colour = metricProperties.rain.colour;
-  const formatValue = (v: number) => `${v.toFixed(0)} mm`;
+  const metric = metricProperties.rain;
 </script>
 
 <SparklineViz
+  name={metric.name}
   placeholders={locations}
-  metric="rain"
   loadData={async () => {
     const charts = await fetchData({
-      dataBaseUrl:
-        'https://abcnewsdata.sgp1.digitaloceanspaces.com/data-time-series-weather/assets/precipitationSince9amMM',
+      dataBaseUrl: metric.dataUrl,
       locations,
       range: { startDate, endDate }
     });
 
     return { charts };
   }}
-  {formatValue}
-  {colour}
-  darkColour={metricProperties.rain.darkColour}
-  attribution="Times shown in user's local time. Source: MetraWeather."
+  formatValue={metric.formatValue}
+  colour={metric.colour}
+  darkColour={metric.darkColour}
+  attribution={metric.attribution}
 />

@@ -5,27 +5,23 @@
 
   let { locations = ['Brisbane', 'Sydney', 'Melbourne', 'Adelaide'], startDate = '', endDate = '' } = $props();
 
-  // Temperature-specific configuration
-  const yDomain: [number, number] = [10, 45];
-  const colour = metricProperties.tempc.colour;
-  const formatValue = (v: number) => `${v.toFixed(1)}°C`;
+  const metric = metricProperties.tempc;
 </script>
 
 <SparklineViz
+  name={metric.name}
   placeholders={locations}
-  metric="tempc"
   loadData={async () => {
     const charts = await fetchData({
-      dataBaseUrl: 'https://abcnewsdata.sgp1.digitaloceanspaces.com/data-time-series-weather/assets/tempC',
+      dataBaseUrl: metric.dataUrl,
       locations,
       range: { startDate, endDate }
     });
 
     return { charts };
   }}
-  {formatValue}
-  {yDomain}
-  {colour}
-  darkColour={metricProperties.tempc.darkColour}
-  attribution="Times shown in user's local time. Source: MetraWeather."
+  formatValue={metric.formatValue}
+  colour={metric.colour}
+  darkColour={metric.darkColour}
+  attribution={metric.attribution}
 />

@@ -44,11 +44,5 @@ const LocationSchema = object({
 
 export type ObservationType = InferOutput<typeof ObservationSchema>;
 
-const MetricSchema = union([
-  literal('gust'),
-  literal('rain'),
-  literal('swell'),
-  literal('humidity'),
-  literal('tempc')
-]);
+const MetricSchema = union([literal('gust'), literal('rain'), literal('humidity'), literal('tempc')]);
 export type MetricType = InferOutput<typeof MetricSchema>;

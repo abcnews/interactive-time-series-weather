@@ -34,7 +34,8 @@ async function fetchChunkedData(dataBaseUrl: string, { startDate = '', endDate =
 export async function fetchData({
   dataBaseUrl,
   locations,
-  range = { startDate: '2026-01-01', endDate: '2026-01-07' }
+  range = { startDate: '2026-01-01', endDate: '2026-01-07' },
+  parseValue = (val: number) => val
 }): Promise<Array<{ name: string; chartData: Array<{ x: number; y: number }> }>> {
   if (!dataBaseUrl) {
     throw new Error('baseUrl missing');
@@ -68,7 +69,7 @@ export async function fetchData({
             const thisDate = new Date(Number(startDate) + offsetMinutes * 60 * 1000);
             chartData.push({
               x: thisDate.getTime(),
-              y: value
+              y: typeof value === 'number' ? parseValue(value) : value
             });
           });
         });

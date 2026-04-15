@@ -5,25 +5,23 @@
 
   let { locations = ['Brisbane', 'Sydney', 'Melbourne', 'Adelaide'], startDate = '', endDate = '' } = $props();
 
-  // Wind speed configuration
-  const colour = metricProperties.gust.colour;
-  const formatValue = (v: number) => `${v.toFixed(0)} km/h`;
+  const metric = metricProperties.gust;
 </script>
 
 <SparklineViz
+  name={metric.name}
   placeholders={locations}
-  metric="gust"
   loadData={async () => {
     const charts = await fetchData({
-      dataBaseUrl: 'https://abcnewsdata.sgp1.digitaloceanspaces.com/data-time-series-weather/assets/maximumGustKmh',
+      dataBaseUrl: metric.dataUrl,
       locations,
       range: { startDate, endDate }
     });
 
     return { charts };
   }}
-  {formatValue}
-  {colour}
-  darkColour={metricProperties.gust.darkColour}
-  attribution="Times shown in user's local time. Source: MetraWeather."
+  formatValue={metric.formatValue}
+  colour={metric.colour}
+  darkColour={metric.darkColour}
+  attribution={metric.attribution}
 />

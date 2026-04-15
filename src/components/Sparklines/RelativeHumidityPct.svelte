@@ -5,25 +5,23 @@
 
   let { locations = ['Brisbane', 'Sydney', 'Melbourne', 'Adelaide'], startDate = '', endDate = '' } = $props();
 
-  const colour = metricProperties.humidity.colour;
-  const formatValue = (v: number) => `${v.toFixed(0)}%`;
+  const metric = metricProperties.humidity;
 </script>
 
 <SparklineViz
+  name={metric.name}
   placeholders={locations}
-  metric="humidity"
   loadData={async () => {
     const charts = await fetchData({
-      dataBaseUrl:
-        'https://abcnewsdata.sgp1.digitaloceanspaces.com/data-time-series-weather/assets/relativeHumidityPct',
+      dataBaseUrl: metric.dataUrl,
       locations,
       range: { startDate, endDate }
     });
 
     return { charts };
   }}
-  {formatValue}
-  {colour}
-  darkColour={metricProperties.humidity.darkColour}
-  attribution="Times shown in user's local time. Source: MetraWeather."
+  formatValue={metric.formatValue}
+  colour={metric.colour}
+  darkColour={metric.darkColour}
+  attribution={metric.attribution}
 />

@@ -75,7 +75,7 @@
     /**
      * Optional metric type for scale synchronization.
      */
-    metric?: MetricType;
+    name?: string;
   }
 
   let {
@@ -87,7 +87,7 @@
     colour: colourProp,
     darkColour: darkColourProp,
     attribution,
-    metric
+    name
   }: SparklineVizProps = $props();
 
   // Internal utility for synchronizing domains across instances
@@ -95,8 +95,8 @@
 
   // Subscribe to shared extents from the broadcast channel
   $effect(() => {
-    if (metric && extentStores[metric]) {
-      const unsubscribe = extentStores[metric].subscribe(value => {
+    if (name && extentStores[name]) {
+      const unsubscribe = extentStores[name].subscribe(value => {
         sharedExtents = value;
       });
       return unsubscribe;
@@ -105,14 +105,14 @@
 
   // Update shared extents based on local data
   $effect(() => {
-    if (metric && extentStores[metric] && charts.length > 0) {
+    if (name && extentStores[name] && charts.length > 0) {
       const allYValues = charts.flatMap(chart => chart.chartData.map(point => point.y));
       const allXValues = charts.flatMap(chart => chart.chartData.map(point => point.x));
 
       const localYDomain = calculateDomain(allYValues);
       const localXDomain = calculateDomain(allXValues, 0);
 
-      extentStores[metric].update(current => {
+      extentStores[name].update(current => {
         const nextY: [number, number] = [
           Math.min(current?.y[0] ?? Infinity, localYDomain[0]),
           Math.max(current?.y[1] ?? -Infinity, localYDomain[1])
@@ -157,10 +157,10 @@
 
     // Merge with shared broadcasted extents if available
     if (sharedExtents?.[key]) {
-      return [
-        Math.min(baseline[0], sharedExtents[key][0]),
-        Math.max(baseline[1], sharedExtents[key][1])
-      ] as [number, number];
+      return [Math.min(baseline[0], sharedExtents[key][0]), Math.max(baseline[1], sharedExtents[key][1])] as [
+        number,
+        number
+      ];
     }
 
     return baseline;
@@ -244,9 +244,10 @@
 >
   <div class="charts">
     {#each displayCharts as chart, i}
-      <div style:--delay="{i * 0.5}ms">
+      <div style:--index={i}>
         <Chart
           name={chart.name}
+          description={name}
           altText={`A chart shows temperatures at ${chart.name}`}
           data={chart.chartData}
           {formatValue}
@@ -292,9 +293,9 @@
   }
 
   .attribution {
-    font-family: ABCSans;
-    border-radius: 1000px;
-    padding: 2px 0;
-    display: inline-block;
+    font-size: 12px;
+    font-style: normal;
+    font-weight: 400;
+    line-height: 135%; /* 16.2px */
   }
 </style>

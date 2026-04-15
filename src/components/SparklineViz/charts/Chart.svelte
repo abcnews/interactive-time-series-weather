@@ -23,8 +23,10 @@
   }
 
   interface Props {
-    /** The chart title displayed above the visualization */
+    /** The chart title displayed above the visualization (usually location) */
     name: string;
+    /** The description (usually the measurement type and units)*/
+    description: string;
     /** Accessible description of the chart for screen readers */
     altText: string;
     /** Time series data points to visualize */
@@ -43,6 +45,7 @@
 
   let {
     name,
+    description,
     altText,
     data,
     formatValue = (v: number) => `${v}`,
@@ -109,13 +112,20 @@
     $observationHandlingLeave = false;
     $activeObservation = null;
   }
+
+  let lastUpdated = $derived.by(() => data[data.length - 1]);
 </script>
 
 <!-- This is a bubbled click handler to remove labels for touch events that have suitable alt text in the Observations <ol> -->
 <!-- svelte-ignore a11y_click_events_have_key_events -->
 <!-- svelte-ignore a11y_no_static_element_interactions -->
 <div class="chart" {onclick}>
-  <h2>{name}</h2>
+  <h2 class="chart__name">{name}</h2>
+  <p class="chart__description">{description}</p>
+  <p class="chart__last-updated">
+    &nbsp;
+    {#if lastUpdated}Last updated {formatTime(lastUpdated)}{/if}
+  </p>
   <div role="figure" class="chart__figure" aria-label={altText}>
     {#if data.length > 0}
       <LayerCake
@@ -179,17 +189,33 @@
     width: 100%;
     height: 100px;
     overflow: hidden;
-    :global(svg) {
+    :global(.layercake-container) {
       animation: fadeIn 0.25s;
+      animation-delay: calc(20ms * var(--index, 0));
+      animation-duration: calc(400ms + 400ms * var(--index, 0));
+      animation-fill-mode: backwards;
     }
   }
-  h2 {
-    display: inline-block;
-    margin: 0;
-    padding: 2px 0;
-    font-size: 1.125rem;
-    font-weight: bold;
-    border-radius: 1000px;
+  .chart__name {
+    font-size: 14px;
+    font-style: normal;
+    font-weight: 700;
+    line-height: 135%; /* 18.9px */
+    margin-bottom: 4px;
+  }
+  .chart__description {
+    font-size: 12px;
+    font-style: normal;
+    font-weight: 400;
+    line-height: 135%; /* 16.2px */
+  }
+  .chart__last-updated {
+    color: #6e7787;
+    text-align: right;
+    font-size: 11px;
+    font-style: normal;
+    font-weight: 400;
+    line-height: 135%; /* 14.85px */
   }
   @media (min-width: 48em) {
     h2 {
