@@ -3,9 +3,7 @@
    * @file Displays a value label positioned at a data point location.
    *
    * A native SVG component used for static labels (High/Low points).
-   * Supports 'outer' stroke via paint-order and uses anchor-based positioning.
    */
-
   import { getContext, untrack } from 'svelte';
 
   interface Props {
@@ -13,15 +11,10 @@
     value: string; // Formatted value string (e.g., "25km/h")
     alignment?: 'above' | 'below';
     highlight?: boolean;
+    class: string;
   }
 
-  let {
-    data,
-    value,
-    alignment = 'above',
-    highlight = false,
-    class: className
-  }: Props = $props();
+  let { data, value, alignment = 'above', highlight = false, class: className }: Props = $props();
 
   let textEl = $state<SVGTextElement | null>(null);
   let width = $state(0);
@@ -43,14 +36,15 @@
     }
   });
 
-  // Monitor boundaries and trigger stateful flips
+  // Monitor boundaries and trigger stateful flips. Don't derive this because we
+  // want our labels to stay stable rather than flipping all over the place as
+  // the values themselves flip-flop.
   $effect(() => {
     const x = $xGet(data);
     const y = $yGet(data);
     const w = width || 40;
     const h = height || 15;
 
-    // Horizontal Hysteresis
     if (hAlign === 'center') {
       if (x - w / 2 < 0) hAlign = 'right';
       else if (x + w / 2 > $chartWidth) hAlign = 'left';
@@ -62,7 +56,6 @@
       else if (x > 50 && x < $chartWidth - 50) hAlign = 'center';
     }
 
-    // Vertical Hysteresis
     if (vAlign === 'above') {
       if (y - h - margin < 0) vAlign = 'below';
     } else {

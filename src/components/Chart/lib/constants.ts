@@ -1,5 +1,5 @@
-import { fetchData } from '../../../Sparklines/fetchData';
-import { BASE_URL } from '../../../util';
+import { fetchData } from '../../Sparklines/fetchData';
+import { BASE_URL } from '../../util';
 import type { MetricType } from './data';
 
 export const padding = { top: 2.5, right: 2.5, bottom: 25 };

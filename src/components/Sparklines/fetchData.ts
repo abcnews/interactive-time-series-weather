@@ -1,5 +1,5 @@
 import type { LocationsFeatureCollection, TimeSeriesData } from '../../types';
-import { metricProperties } from '../SparklineViz/charts/lib/constants';
+import { metricProperties } from '../Chart/lib/constants';
 import { blockingFetch, LOCATIONS_URL } from '../util';
 let i = 0;
 /**

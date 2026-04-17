@@ -1,0 +1,26 @@
+- Building
+- Building
+[33m[1mDeprecation Warning[0m [[34mlegacy-js-api[0m]: The legacy JS API is deprecated and will be removed in Dart Sass 2.0.0.
+
+More info: https://sass-lang.com/d/legacy-js-api
+
+[33m[1mDeprecation Warning[0m [[34mlegacy-js-api[0m]: The legacy JS API is deprecated and will be removed in Dart Sass 2.0.0.
+
+More info: https://sass-lang.com/d/legacy-js-api
+
+[33m[1mDeprecation Warning[0m [[34mlegacy-js-api[0m]: The legacy JS API is deprecated and will be removed in Dart Sass 2.0.0.
+
+More info: https://sass-lang.com/d/legacy-js-api
+
+[33m[1mDeprecation Warning[0m [[34mlegacy-js-api[0m]: The legacy JS API is deprecated and will be removed in Dart Sass 2.0.0.
+
+More info: https://sass-lang.com/d/legacy-js-api
+
+[33m[1mDeprecation Warning[0m [[34mlegacy-js-api[0m]: The legacy JS API is deprecated and will be removed in Dart Sass 2.0.0.
+
+More info: https://sass-lang.com/d/legacy-js-api
+
+[33m[1mDeprecation Warning[0m [[34mlegacy-js-api[0m]: The legacy JS API is deprecated and will be removed in Dart Sass 2.0.0.
+
+More info: https://sass-lang.com/d/legacy-js-api
+

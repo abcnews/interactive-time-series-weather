@@ -5,12 +5,12 @@
   import Sparklines from '../Sparklines/Sparklines.svelte';
   import LocationPicker from './LocationPicker.svelte';
   import GeoLocationPicker from './GeoLocationPicker/GeoLocationPicker.svelte';
-  import { rawData } from '../SparklineViz/charts/lib/stores';
+  import { rawData } from '../Chart/lib/stores';
   const defaultParams = new URLSearchParams(location.hash.slice(1));
   // Initialize dynamic favicon
   import faviconUrl from './favicon.svg';
   import Favicon from '../Favicon/Favicon.svelte';
-  import { metricProperties } from '../SparklineViz/charts/lib/constants';
+  import { metricProperties } from '../Chart/lib/constants';
 
   let locations = $state(
     (

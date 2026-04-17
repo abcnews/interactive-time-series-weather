@@ -4,8 +4,8 @@
    */
 
   import { getContext } from 'svelte';
-  import { useInteraction } from './lib/useInteraction.js';
-  import { observationHandlingLeave } from './lib/stores';
+  import { useInteraction } from '../lib/useInteraction.js';
+  import { observationHandlingLeave } from '../lib/stores';
 
   interface Props {
     data: any[];

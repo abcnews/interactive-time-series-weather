@@ -9,18 +9,18 @@
   import { Html, LayerCake, Svg } from 'layercake';
   import { scaleLinear } from 'd3-scale';
   import { activeObservation, observationHandlingLeave } from './lib/stores';
-  import Line from './Line.svelte';
-  import Area from './Area.svelte';
-  import Circle from './Circle.svelte';
-  import Gradient from './Gradient.svelte';
-  import ValueLabel from './ValueLabel.svelte';
-  import ActiveTooltip from './ActiveTooltip.svelte';
-  import InteractionLayer from './InteractionLayer.svelte';
-  import ObservationsTable from './ObservationsTable.svelte';
-  import AxisX from './AxisX.svelte';
-  import AxisY from './AxisY.svelte';
-import { padding, CHART_HEIGHT } from './lib/constants';
-import { calculateDomain } from './lib/utils';
+  import Line from './Line/Line.svelte';
+  import Area from './Area/Area.svelte';
+  import Circle from './Circle/Circle.svelte';
+  import Gradient from './Gradient/Gradient.svelte';
+  import ValueLabel from './ValueLabel/ValueLabel.svelte';
+  import ActiveTooltip from './ActiveTooltip/ActiveTooltip.svelte';
+  import InteractionLayer from './InteractionLayer/InteractionLayer.svelte';
+  import ObservationsTable from './ObservationsTable/ObservationsTable.svelte';
+  import AxisX from './AxisX/AxisX.svelte';
+  import AxisY from './AxisY/AxisY.svelte';
+  import { padding, CHART_HEIGHT } from './lib/constants';
+  import { calculateDomain } from './lib/utils';
 
   interface DataPoint {
     x: number;
@@ -87,13 +87,6 @@ import { calculateDomain } from './lib/utils';
   let isActiveObservation = $derived($activeObservation !== null && data.includes($activeObservation as any));
   let activeDataPoint = $derived(isActiveObservation ? ($activeObservation as any as DataPoint) : null);
 
-  // Format functions
-  function formatAriaLabel(d: DataPoint): string {
-    const value = formatValue(d.y);
-    const time = formatTime(d);
-    return time ? `${value} ${time}` : value;
-  }
-
   /**
    * Close the popup when we click outside of the chart.
    */
@@ -110,7 +103,7 @@ import { calculateDomain } from './lib/utils';
   let lastUpdated = $derived.by(() => data[data.length - 1]);
 
   // Dynamic padding calculation based on label width estimation
-  // Using 3 chars = 16px as measured by the user (~5.33px per char)
+  // Using 3 chars = 16px (~5.33px per char)
   // Plus 8px for label offset, no extra gutter to keep it tight.
   let leftPadding = $derived.by(() => {
     const domain = yDomain || calculateDomain(values, 0.1);
@@ -156,9 +149,19 @@ import { calculateDomain } from './lib/utils';
           />
 
           {#if !isActiveObservation && primaryPoint}
-            <ValueLabel class="label-maximum" data={primaryPoint} value={formatValue(primaryPoint.y)} highlight={true} />
+            <ValueLabel
+              class="label-maximum"
+              data={primaryPoint}
+              value={formatValue(primaryPoint.y)}
+              highlight={true}
+            />
             {#if secondaryPoint && !hideSecondaryLabel && secondaryPoint !== primaryPoint}
-              <ValueLabel class="label-most-recent" data={secondaryPoint} value={formatValue(secondaryPoint.y)} alignment="below" />
+              <ValueLabel
+                class="label-most-recent"
+                data={secondaryPoint}
+                value={formatValue(secondaryPoint.y)}
+                alignment="below"
+              />
             {/if}
           {/if}
 
