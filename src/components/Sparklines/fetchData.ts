@@ -1,6 +1,6 @@
 import type { LocationsFeatureCollection, TimeSeriesData } from '../../types';
-import { metricProperties } from '../Chart/lib/constants';
-import { blockingFetch, LOCATIONS_URL } from '../util';
+import { metricProperties } from '../../lib/chartTypes';
+import { blockingFetch, LOCATIONS_URL } from '../../lib/util';
 let i = 0;
 /**
  * Data is chunked by day, so when we fetch a date range we must fetch the file

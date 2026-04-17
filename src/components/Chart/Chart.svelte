@@ -19,7 +19,6 @@
   import ObservationsTable from './ObservationsTable/ObservationsTable.svelte';
   import AxisX from './AxisX/AxisX.svelte';
   import AxisY from './AxisY/AxisY.svelte';
-  import { padding, CHART_HEIGHT } from './lib/constants';
   import { calculateDomain } from './lib/utils';
 
   interface DataPoint {
@@ -46,6 +45,8 @@
     xDomain?: [number, number];
     /** Solid colour for the chart */
     colour?: string;
+    /** The height of the chart in pixels. Defaults to 150. */
+    height?: number;
   }
 
   let {
@@ -65,8 +66,11 @@
     },
     yDomain,
     xDomain,
-    colour
+    colour,
+    height = 150
   }: Props = $props();
+
+  const padding = { top: 2.5, right: 2.5, bottom: 25 };
 
   // Generate a slug for unique gradient IDs
   let slug = $derived(name.toLowerCase().replace(/\s+/g, '-'));
@@ -124,7 +128,7 @@
     &nbsp;
     {#if lastUpdated}Last updated {formatTime(lastUpdated)}{/if}
   </p>
-  <div role="figure" class="chart__figure" aria-label={altText}>
+  <div role="figure" class="chart__figure" style:height="{height}px" aria-label={altText}>
     {#if data.length > 0}
       <LayerCake
         {data}
@@ -200,7 +204,7 @@
   }
   .chart__figure {
     width: 100%;
-    height: 150px;
+    min-height: 100px;
     overflow: hidden;
     :global(.layercake-container) {
       animation: fadeIn 0.25s;

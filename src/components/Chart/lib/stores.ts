@@ -1,7 +1,7 @@
 import { broadcastable } from './broadcastable';
 import { writable } from 'svelte/store';
-import type { ObservationType } from './data';
-import { metricProperties } from './constants';
+import type { ObservationType, MetricType } from '../../../lib/chartTypes';
+import { metricProperties } from '../../../lib/chartTypes';
 
 export const rawData = writable<
   Array<{

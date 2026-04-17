@@ -1,7 +1,7 @@
 <script lang="ts">
   import { BuilderStyleRoot, BuilderFrame, UpdateChecker, Typeahead, Loader } from '@abcnews/components-builder';
   import { onMount } from 'svelte';
-  import { LOCATIONS_URL } from '../util';
+  import { LOCATIONS_URL } from '../../lib/util';
   import Sparklines from '../Sparklines/Sparklines.svelte';
   import LocationPicker from './LocationPicker.svelte';
   import GeoLocationPicker from './GeoLocationPicker/GeoLocationPicker.svelte';
@@ -10,7 +10,7 @@
   // Initialize dynamic favicon
   import faviconUrl from './favicon.svg';
   import Favicon from '../Favicon/Favicon.svelte';
-  import { metricProperties } from '../Chart/lib/constants';
+  import { metricProperties } from '../../lib/chartTypes';
 
   let locations = $state(
     (

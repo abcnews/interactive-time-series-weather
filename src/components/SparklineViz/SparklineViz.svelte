@@ -1,11 +1,11 @@
 <script lang="ts">
   import Chart from '../Chart/Chart.svelte';
   import { intersectionObserver } from './useIntersectionObserver.js';
-  import { emitResize } from '../util';
+  import { emitResize } from '../../lib/util';
   import { calculateDomain } from '../Chart/lib/utils';
   import { untrack } from 'svelte';
   import { extentStores, rawData } from '../Chart/lib/stores';
-  import type { MetricType } from '../Chart/lib/data';
+  import type { MetricType } from '../../lib/chartTypes';
 
   /**
    * Props for the SparklineViz component.

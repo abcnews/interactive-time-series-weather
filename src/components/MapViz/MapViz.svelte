@@ -3,7 +3,7 @@
   import { onMount } from 'svelte';
   import SpikeLayer from './SpikeLayer';
   import type { LocationsFeatureCollection, TimeSeriesData } from '../../types';
-  import { BASE_URL } from '../util';
+  import { BASE_URL } from '../../lib/util';
 
   let geojson = $state<LocationsFeatureCollection>({} as LocationsFeatureCollection);
   let data = $state<TimeSeriesData>({} as TimeSeriesData);
