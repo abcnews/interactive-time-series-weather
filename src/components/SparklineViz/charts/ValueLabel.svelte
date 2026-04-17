@@ -26,11 +26,11 @@
 <div
   class="value-label"
   bind:clientWidth={width}
-  style:left="{Math.min($chartWidth - width / 2, Math.max($xGet(data), width / 2))}px"
+  style:left="{Math.round(Math.min($chartWidth - width / 2, Math.max($xGet(data), width / 2)))}px"
   class:below={alignment === 'below'}
   class:tooltip={showTime}
   class:highlight
-  style:top="{$yGet(data)}px"
+  style:top="{Math.round($yGet(data))}px"
 >
   {value}
   {#if showTime && timeDisplay}
@@ -39,18 +39,12 @@
 </div>
 
 <style>
-  :global([data-scheme='dark']) {
-    --weather-viz-valuelabel-stroke-shadow: black;
-  }
-  :global([data-scheme='light']) {
-    --weather-viz-valuelabel-stroke-shadow: white;
-  }
-
   .value-label {
     position: absolute;
     transform: translate(-50%, calc(-100% - 10px));
     -webkit-text-stroke-width: 1px;
-    -webkit-text-stroke-color: rgba(255, 255, 255, 0.75);
+    -webkit-text-stroke-color: var(--theme-shadow);
+    color: var(--theme-text);
     font-size: 12px;
     font-style: normal;
     font-weight: 400;
@@ -60,8 +54,7 @@
 
   .highlight {
     font-size: 12px;
-    --shadow: var(--weather-viz-valuelabel-stroke-shadow, white);
-    -webkit-text-stroke: 3px var(--shadow);
+    -webkit-text-stroke: 3px var(--theme-shadow);
     paint-order: markers stroke fill;
   }
 
@@ -69,14 +62,14 @@
     text-align: center;
     padding: 3px;
     border-radius: 2px;
-    background: white;
-    color: black;
+    background: var(--theme-tooltip-bg);
+    color: var(--theme-text);
+    -webkit-text-stroke: 0;
   }
 
   .below {
     transform: translate(-50%, 10px);
-    --shadow: var(--weather-viz-valuelabel-stroke-shadow, white);
-    -webkit-text-stroke: 3px var(--shadow);
+    -webkit-text-stroke: 3px var(--theme-shadow);
     paint-order: markers stroke fill;
   }
 

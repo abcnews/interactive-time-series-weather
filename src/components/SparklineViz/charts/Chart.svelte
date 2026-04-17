@@ -15,7 +15,9 @@
   import Gradient from './Gradient.svelte';
   import ValueLabel from './ValueLabel.svelte';
   import Observations from './Observations.svelte';
-  import { padding } from './lib/constants';
+  import AxisX from './AxisX.svelte';
+import AxisY from './AxisY.svelte';
+import { padding, CHART_HEIGHT } from './lib/constants';
 
   interface DataPoint {
     x: number;
@@ -124,10 +126,12 @@
         y={d => d.y}
         {yDomain}
         {xDomain}
-        yScale={scaleLinear().clamp(true)}
+        yScale={scaleLinear().clamp(true).nice()}
         custom={{ formatValue }}
       >
         <Svg>
+          <AxisX />
+          <AxisY />
           <Area fill={`url('#gradient-shade-${slug}')`} />
           <Line />
           <Gradient id="gradient-shade-{slug}" {colour} />
@@ -176,7 +180,7 @@
   }
   .chart__figure {
     width: 100%;
-    height: 100px;
+    height: 150px;
     overflow: hidden;
     :global(.layercake-container) {
       animation: fadeIn 0.25s;

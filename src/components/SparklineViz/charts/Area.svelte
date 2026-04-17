@@ -12,9 +12,9 @@
 
   let path = $derived(
     area()
-      .x($xGet as any)
-      .y1($yGet as any)
-      .y0((d: any) => $height)
+      .x((d: any) => Math.round($xGet(d)))
+      .y1((d: any) => Math.round($yGet(d)))
+      .y0((d: any) => Math.round($height))
       .curve(curve)($data)
   );
 </script>

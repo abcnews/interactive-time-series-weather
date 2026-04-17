@@ -277,13 +277,39 @@
   }
   .app {
     overflow: hidden;
+
+    /* Unidied Theme Variables - Light Mode (Default) */
+    --theme-text: #000;
+    --theme-label: #6e7787;
+    --theme-axis: #ccc;
+    --theme-grid: var(--theme-axis);
+    --theme-shadow: rgba(255, 255, 255, 0.75);
+    --theme-tooltip-bg: white;
     --weather-viz-metric-colour: var(--weather-viz-colour);
-  }
-  :global([data-scheme='dark']) .app {
-    --weather-viz-metric-colour: var(--weather-viz-dark-colour);
-  }
-  :global([data-scheme='light']) .app {
-    --weather-viz-metric-colour: var(--weather-viz-colour);
+
+    /* Scoped Dark Mode Overrides */
+    &:global([data-scheme='dark']),
+    :global([data-scheme='dark']) & {
+      --theme-text: #eee;
+      --theme-label: #a0aec0;
+      --theme-axis: #4a5568;
+      --theme-grid: var(--theme-axis);
+      --theme-shadow: rgba(0, 0, 0, 0.75);
+      --theme-tooltip-bg: #1a202c;
+      --weather-viz-metric-colour: var(--weather-viz-dark-colour);
+    }
+
+    /* Force Light Mode (if nested) */
+    &:global([data-scheme='light']),
+    :global([data-scheme='light']) & {
+      --theme-text: #000;
+      --theme-label: #6e7787;
+      --theme-axis: #ccc;
+      --theme-grid: var(--theme-axis);
+      --theme-shadow: rgba(255, 255, 255, 0.75);
+      --theme-tooltip-bg: white;
+      --weather-viz-metric-colour: var(--weather-viz-colour);
+    }
   }
   .charts {
     display: flex;

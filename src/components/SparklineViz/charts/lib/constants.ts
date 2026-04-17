@@ -2,7 +2,8 @@ import { fetchData } from '../../../Sparklines/fetchData';
 import { BASE_URL } from '../../../util';
 import type { MetricType } from './data';
 
-export const padding = { top: 25, left: 2, right: 25, bottom: 5 };
+export const padding = { top: 20, left: 35, right: 15, bottom: 25 };
+export const CHART_HEIGHT = 150;
 
 const METRAWEATHER_ATTR = "Times shown in user's local time. Source: MetraWeather.";
 
