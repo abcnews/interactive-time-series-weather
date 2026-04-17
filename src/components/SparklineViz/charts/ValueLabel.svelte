@@ -2,86 +2,111 @@
   /**
    * @file Displays a value label positioned at a data point location.
    *
-   * A dumb component that displays formatted values at specified positions.
-   * Can be shown above or below the data point, optionally highlighted, and can display time information.
+   * A native SVG component used for static labels (High/Low points).
+   * Supports 'outer' stroke via paint-order and uses anchor-based positioning.
    */
 
-  import { getContext } from 'svelte';
+  import { getContext, untrack } from 'svelte';
 
   interface Props {
     data: any;
     value: string; // Formatted value string (e.g., "25km/h")
-    timeDisplay?: string; // Optional formatted time string
     alignment?: 'above' | 'below';
-    showTime?: boolean;
     highlight?: boolean;
   }
 
-  let { data, value, timeDisplay, alignment = 'above', showTime = false, highlight = false }: Props = $props();
+  let {
+    data,
+    value,
+    alignment = 'above',
+    highlight = false,
+    class: className
+  }: Props = $props();
 
+  let textEl = $state<SVGTextElement | null>(null);
   let width = $state(0);
+  let height = $state(0);
   const { xGet, yGet, width: chartWidth, height: chartHeight } = getContext<any>('LayerCake');
 
-  let finalAlignment = $derived.by(() => {
-    const y = $yGet(data);
-    if (y < 20) return 'below';
-    if (y > $chartHeight - 20) return 'above';
-    return alignment;
+  const margin = 10;
+
+  // Persistent state for current alignment flips
+  let hAlign = $state<'center' | 'left' | 'right'>('center');
+  let vAlign = $state<'above' | 'below'>(untrack(() => alignment));
+
+  // Measure SVG text dimensions
+  $effect(() => {
+    if (textEl) {
+      const bbox = textEl.getBBox();
+      width = bbox.width;
+      height = bbox.height;
+    }
   });
+
+  // Monitor boundaries and trigger stateful flips
+  $effect(() => {
+    const x = $xGet(data);
+    const y = $yGet(data);
+    const w = width || 40;
+    const h = height || 15;
+
+    // Horizontal Hysteresis
+    if (hAlign === 'center') {
+      if (x - w / 2 < 0) hAlign = 'right';
+      else if (x + w / 2 > $chartWidth) hAlign = 'left';
+    } else if (hAlign === 'right') {
+      if (x + w + margin > $chartWidth) hAlign = 'left';
+      else if (x > 50 && x < $chartWidth - 50) hAlign = 'center';
+    } else if (hAlign === 'left') {
+      if (x - w - margin < 0) hAlign = 'right';
+      else if (x > 50 && x < $chartWidth - 50) hAlign = 'center';
+    }
+
+    // Vertical Hysteresis
+    if (vAlign === 'above') {
+      if (y - h - margin < 0) vAlign = 'below';
+    } else {
+      if (y + h + margin > $chartHeight) vAlign = 'above';
+    }
+  });
+
+  // Derived anchor properties for SVG text
+  let textAnchor = $derived(hAlign === 'left' ? 'end' : hAlign === 'right' ? 'start' : 'middle');
+  let dominantBaseline = $derived(vAlign === 'above' ? 'auto' : 'hanging');
+  let dx = $derived(hAlign === 'left' ? -margin : hAlign === 'right' ? margin : 0);
+  let dy = $derived(vAlign === 'above' ? -margin : margin);
 </script>
 
-<div
-  class="value-label"
-  bind:clientWidth={width}
-  style:left="{Math.round(Math.min($chartWidth - width / 2, Math.max($xGet(data), width / 2)))}px"
-  class:below={finalAlignment === 'below'}
-  class:tooltip={showTime}
-  class:highlight
-  style:top="{Math.round($yGet(data))}px"
->
-  {value}
-  {#if showTime && timeDisplay}
-    <time>{timeDisplay}</time>
-  {/if}
-</div>
+<g class="{className || ''} value-label" class:highlight>
+  <text
+    bind:this={textEl}
+    x={$xGet(data)}
+    y={$yGet(data)}
+    {dx}
+    {dy}
+    text-anchor={textAnchor}
+    dominant-baseline={dominantBaseline}
+  >
+    {value}
+  </text>
+</g>
 
 <style>
-  .value-label {
-    position: absolute;
-    transform: translate(-50%, calc(-100% - 10px));
-    -webkit-text-stroke-width: 1px;
-    -webkit-text-stroke-color: var(--theme-shadow);
-    color: var(--theme-text);
+  .value-label text {
+    fill: var(--theme-text);
+    stroke: var(--theme-shadow);
+    stroke-width: 3px;
+    paint-order: stroke fill;
     font-size: 12px;
     font-style: normal;
     font-weight: 400;
-    line-height: 15px; /* 125% */
-    white-space: nowrap;
+    line-height: normal;
+    transition: all 0.2s ease;
+    pointer-events: none;
+    -webkit-font-smoothing: antialiased;
   }
 
-  .highlight {
-    font-size: 12px;
-    -webkit-text-stroke: 3px var(--theme-shadow);
-    paint-order: markers stroke fill;
-  }
-
-  .tooltip {
-    text-align: center;
-    padding: 3px;
-    border-radius: 2px;
-    background: var(--theme-tooltip-bg);
-    color: var(--theme-text);
-    -webkit-text-stroke: 0;
-  }
-
-  .below {
-    transform: translate(-50%, 10px);
-    -webkit-text-stroke: 3px var(--theme-shadow);
-    paint-order: markers stroke fill;
-  }
-
-  time {
-    display: block;
-    margin: 0;
+  .highlight text {
+    font-weight: 700;
   }
 </style>

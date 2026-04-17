@@ -1,6 +1,7 @@
 <script lang="ts">
   import { getContext } from 'svelte';
 
+  let { class: className } = $props();
   const { yScale, width, height } = getContext<any>('LayerCake');
 
   /**
@@ -30,7 +31,7 @@
   }
 </script>
 
-<g class="axis y-axis">
+<g class="{className || ''} axis">
   <!-- Seamless box vertical lines -->
   <line x1="0" y1="0" x2="0" y2={Math.round($height)} class="box-line"></line>
   <line x1={Math.round($width)} y1="0" x2={Math.round($width)} y2={Math.round($height)} class="box-line"></line>

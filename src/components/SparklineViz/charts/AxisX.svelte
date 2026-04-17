@@ -1,6 +1,7 @@
 <script lang="ts">
   import { getContext } from 'svelte';
 
+  let { class: className } = $props();
   const { xScale, height, padding } = getContext<any>('LayerCake');
 
   /**
@@ -18,7 +19,7 @@
   let ticks = $derived($xScale.ticks(3)); // Just 3 ticks for sparkline-style charts to prevent clutter
 </script>
 
-<g class="axis x-axis">
+<g class="{className || ''} axis">
   {#each ticks as tick}
     <g class="tick" transform="translate({Math.round($xScale(tick))}, {Math.round($height)})">
       <line y2="6"></line>

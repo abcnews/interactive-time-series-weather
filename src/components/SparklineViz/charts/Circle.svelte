@@ -5,12 +5,12 @@
 
   import { getContext } from 'svelte';
 
-  let { data } = $props();
+  let { data, class: className } = $props();
 
   const { xGet, yGet } = getContext<any>('LayerCake');
 </script>
 
-<circle cx={$xGet(data)} cy={$yGet(data)} r="2.5" class="chart-point" />
+<circle cx={$xGet(data)} cy={$yGet(data)} r="2.5" class="{className || ''} chart-point" />
 
 <style>
   .chart-point {

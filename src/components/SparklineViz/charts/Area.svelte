@@ -6,7 +6,7 @@
   import { getContext } from 'svelte';
   import { area, curveLinear } from 'd3-shape';
 
-  let { fill = '#ab00d610', curve = curveLinear, opacity = '1' } = $props();
+  let { fill = '#ab00d610', curve = curveLinear, opacity = '1', class: className } = $props();
 
   const { data, xGet, yGet, yScale, height } = getContext<any>('LayerCake');
 
@@ -19,4 +19,4 @@
   );
 </script>
 
-<path class="path-area" d={path} {fill} {opacity}></path>
+<path class="{className || ''} path-area" d={path} {fill} {opacity}></path>

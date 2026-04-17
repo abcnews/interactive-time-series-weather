@@ -14,9 +14,11 @@
   import Circle from './Circle.svelte';
   import Gradient from './Gradient.svelte';
   import ValueLabel from './ValueLabel.svelte';
-  import Observations from './Observations.svelte';
+  import ActiveTooltip from './ActiveTooltip.svelte';
+  import InteractionLayer from './InteractionLayer.svelte';
+  import ObservationsTable from './ObservationsTable.svelte';
   import AxisX from './AxisX.svelte';
-import AxisY from './AxisY.svelte';
+  import AxisY from './AxisY.svelte';
 import { padding, CHART_HEIGHT } from './lib/constants';
 import { calculateDomain } from './lib/utils';
 
@@ -142,42 +144,45 @@ import { calculateDomain } from './lib/utils';
         custom={{ formatValue }}
       >
         <Svg>
-          <AxisX />
-          <AxisY />
+          <AxisX class="x-axis" />
+          <AxisY class="y-axis" />
           <Area fill={`url('#gradient-shade-${slug}')`} />
           <Line />
           <Gradient id="gradient-shade-{slug}" {colour} />
-          {#if isActiveObservation}
-            <Circle data={$activeObservation} />
-          {:else if primaryPoint}
-            <Circle data={primaryPoint} />
-            {#if secondaryPoint && !hideSecondaryLabel && secondaryPoint !== primaryPoint}
-              <Circle data={secondaryPoint} />
-            {/if}
-          {/if}
-        </Svg>
-        <Html>
-          {#if isActiveObservation && activeDataPoint}
-            <div role="tooltip" id="tooltip">
-              <ValueLabel
-                data={activeDataPoint}
-                value={formatValue(activeDataPoint.y)}
-                timeDisplay={formatTime(activeDataPoint)}
-                showTime={true}
-              />
-            </div>
-          {:else if primaryPoint}
-            <ValueLabel data={primaryPoint} value={formatValue(primaryPoint.y)} highlight={true} />
-            {#if secondaryPoint && !hideSecondaryLabel && secondaryPoint !== primaryPoint}
-              <ValueLabel data={secondaryPoint} value={formatValue(secondaryPoint.y)} alignment="below" />
-            {/if}
-          {/if}
-          <Observations
+          <InteractionLayer
             {data}
-            {formatAriaLabel}
             onenter={d => ($activeObservation = d)}
             onleave={() => ($activeObservation = null)}
           />
+
+          {#if !isActiveObservation && primaryPoint}
+            <ValueLabel class="label-maximum" data={primaryPoint} value={formatValue(primaryPoint.y)} highlight={true} />
+            {#if secondaryPoint && !hideSecondaryLabel && secondaryPoint !== primaryPoint}
+              <ValueLabel class="label-most-recent" data={secondaryPoint} value={formatValue(secondaryPoint.y)} alignment="below" />
+            {/if}
+          {/if}
+
+          {#if isActiveObservation}
+            <Circle class="active-marker" data={$activeObservation} />
+          {:else if primaryPoint}
+            <Circle class="circle-maximum" data={primaryPoint} />
+            {#if secondaryPoint && !hideSecondaryLabel && secondaryPoint !== primaryPoint}
+              <Circle class="circle-most-recent" data={secondaryPoint} />
+            {/if}
+          {/if}
+        </Svg>
+        <Html pointerEvents={false}>
+          {#if isActiveObservation && activeDataPoint}
+            <div role="tooltip" id="tooltip">
+              <ActiveTooltip
+                class="active-tooltip"
+                data={activeDataPoint}
+                value={formatValue(activeDataPoint.y)}
+                timeDisplay={formatTime(activeDataPoint)}
+              />
+            </div>
+          {/if}
+          <ObservationsTable {data} />
         </Html>
       </LayerCake>
     {/if}
