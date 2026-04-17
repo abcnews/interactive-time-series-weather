@@ -10,7 +10,7 @@
   const { xGet, yGet } = getContext<any>('LayerCake');
 </script>
 
-<circle cx={$xGet(data)} cy={$yGet(data)} r="5" class="chart-point" />
+<circle cx={$xGet(data)} cy={$yGet(data)} r="2.5" class="chart-point" />
 
 <style>
   .chart-point {

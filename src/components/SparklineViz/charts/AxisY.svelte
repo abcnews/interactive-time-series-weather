@@ -10,17 +10,17 @@
 
   // Get ticks from the scale
   let ticks = $derived($yScale.ticks(4));
-  
+
   // Ensure the top and bottom of the domain are included to "box it in"
   let displayTicks = $derived.by(() => {
     const [domainMin, domainMax] = $yScale.domain();
     const hasMin = ticks.some(t => Math.abs(t - domainMin) < 1e-6);
     const hasMax = ticks.some(t => Math.abs(t - domainMax) < 1e-6);
-    
+
     let result = [...ticks];
     if (!hasMin) result.push(domainMin);
     if (!hasMax) result.push(domainMax);
-    
+
     return result.sort((a, b) => a - b);
   });
 
@@ -48,10 +48,11 @@
 
 <style>
   .tick-label {
-    font-family: ABCSans;
-    font-size: 11px;
     fill: var(--theme-label);
+    font-size: 8px;
+    font-style: normal;
     font-weight: 400;
+    line-height: 15px; /* 187.5% */
   }
   line {
     fill: none;

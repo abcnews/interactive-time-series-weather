@@ -9,7 +9,7 @@
 </script>
 
 <SparklineViz
-  name={metric.name}
+  {...metric}
   placeholders={locations}
   loadData={async () => {
     const charts = await fetchData({
@@ -21,8 +21,4 @@
 
     return { charts };
   }}
-  formatValue={metric.formatValue}
-  colour={metric.colour}
-  darkColour={metric.darkColour}
-  attribution={metric.attribution}
 />

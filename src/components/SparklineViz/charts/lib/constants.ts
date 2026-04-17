@@ -2,7 +2,7 @@ import { fetchData } from '../../../Sparklines/fetchData';
 import { BASE_URL } from '../../../util';
 import type { MetricType } from './data';
 
-export const padding = { top: 20, left: 35, right: 15, bottom: 25 };
+export const padding = { top: 2.5, right: 2.5, bottom: 25 };
 export const CHART_HEIGHT = 150;
 
 const METRAWEATHER_ATTR = "Times shown in user's local time. Source: MetraWeather.";
@@ -16,19 +16,22 @@ type MetricProps = {
   attribution: string;
   colour: string;
   darkColour: string;
+  yMin?: number;
+  yMax?: number;
 };
 
 export const metricProperties: Record<MetricType, MetricProps> = {
   gust: {
     name: 'Wind kilometre per hour (peak gust)',
     editorialNotes: `The wind gust (mean over last 10 min) in km/h. Data is fetched by Data Services every ~30 mins, so we're missing ⅔ the data points required to make an accurate chart. We may miss official max or min values on our chart which may or may not be critical.`,
-    // knot to km - https://e~n.wikipedia.org/wiki/Knot_(unit)
+    // knot to km - https://en.wikipedia.org/wiki/Knot_(unit)
     parseValue: (value: number) => value * 1.852,
     formatValue: (v: number) => `${v.toFixed(0)} km/h`,
     dataUrl: BASE_URL + '/assets/windGustSpdKnots',
     attribution: METRAWEATHER_ATTR,
     colour: '#00297E',
-    darkColour: '#AFD6FD'
+    darkColour: '#AFD6FD',
+    yMin: 0
   },
   humidity: {
     name: 'Relative humidity',
@@ -37,7 +40,9 @@ export const metricProperties: Record<MetricType, MetricProps> = {
     dataUrl: BASE_URL + '/assets/relativeHumidityPct',
     attribution: METRAWEATHER_ATTR,
     colour: '#664CB3',
-    darkColour: '#AB96EB'
+    darkColour: '#AB96EB',
+    yMin: 0,
+    yMax: 100
   },
   rainSince9am: {
     name: 'Rainfall (since 9am)',
@@ -46,7 +51,8 @@ export const metricProperties: Record<MetricType, MetricProps> = {
     formatValue: (v: number) => `${v.toFixed(0)} mm`,
     attribution: METRAWEATHER_ATTR,
     colour: '#007BC7',
-    darkColour: '#0092ED'
+    darkColour: '#0092ED',
+    yMin: 0
   },
   // TODO: this needs to be done on the backend
   // rain: {

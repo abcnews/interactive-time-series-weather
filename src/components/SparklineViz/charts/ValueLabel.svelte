@@ -20,14 +20,21 @@
   let { data, value, timeDisplay, alignment = 'above', showTime = false, highlight = false }: Props = $props();
 
   let width = $state(0);
-  const { xGet, yGet, width: chartWidth } = getContext<any>('LayerCake');
+  const { xGet, yGet, width: chartWidth, height: chartHeight } = getContext<any>('LayerCake');
+
+  let finalAlignment = $derived.by(() => {
+    const y = $yGet(data);
+    if (y < 20) return 'below';
+    if (y > $chartHeight - 20) return 'above';
+    return alignment;
+  });
 </script>
 
 <div
   class="value-label"
   bind:clientWidth={width}
   style:left="{Math.round(Math.min($chartWidth - width / 2, Math.max($xGet(data), width / 2)))}px"
-  class:below={alignment === 'below'}
+  class:below={finalAlignment === 'below'}
   class:tooltip={showTime}
   class:highlight
   style:top="{Math.round($yGet(data))}px"

@@ -31,10 +31,11 @@
 
 <style>
   .tick-label {
-    font-family: ABCSans;
-    font-size: 11px;
     fill: var(--theme-label);
+    font-size: 10px;
+    font-style: normal;
     font-weight: 400;
+    line-height: 15px; /* 150% */
   }
   line {
     stroke: var(--theme-axis);

@@ -18,6 +18,7 @@
   import AxisX from './AxisX.svelte';
 import AxisY from './AxisY.svelte';
 import { padding, CHART_HEIGHT } from './lib/constants';
+import { calculateDomain } from './lib/utils';
 
   interface DataPoint {
     x: number;
@@ -105,6 +106,17 @@ import { padding, CHART_HEIGHT } from './lib/constants';
   }
 
   let lastUpdated = $derived.by(() => data[data.length - 1]);
+
+  // Dynamic padding calculation based on label width estimation
+  // Using 3 chars = 16px as measured by the user (~5.33px per char)
+  // Plus 8px for label offset, no extra gutter to keep it tight.
+  let leftPadding = $derived.by(() => {
+    const domain = yDomain || calculateDomain(values, 0.1);
+    // Axis ticks use the raw value or simple formatting - we assume up to 3-4 chars
+    const labels = [Math.round(domain[0]).toString(), Math.round(domain[1]).toString()];
+    const maxChars = Math.max(...labels.map(l => l.length), 3);
+    return Math.round(maxChars * 5.33 + 8);
+  });
 </script>
 
 <!-- This is a bubbled click handler to remove labels for touch events that have suitable alt text in the Observations <ol> -->
@@ -121,7 +133,7 @@ import { padding, CHART_HEIGHT } from './lib/constants';
     {#if data.length > 0}
       <LayerCake
         {data}
-        {padding}
+        padding={{ ...padding, left: leftPadding }}
         x={d => d.x}
         y={d => d.y}
         {yDomain}

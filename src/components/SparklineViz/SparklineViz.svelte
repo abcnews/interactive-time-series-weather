@@ -73,6 +73,16 @@
      */
     attribution?: string;
     /**
+     * Optional hard minimum limit for y-axis.
+     */
+    yMin?: number;
+
+    /**
+     * Optional hard maximum limit for y-axis.
+     */
+    yMax?: number;
+
+    /**
      * Optional metric type for scale synchronization.
      */
     name?: string;
@@ -87,6 +97,8 @@
     colour: colourProp,
     darkColour: darkColourProp,
     attribution,
+    yMin,
+    yMax,
     name
   }: SparklineVizProps = $props();
 
@@ -152,7 +164,7 @@
       baseline = propDomain;
     } else if (charts.length > 0) {
       const values = charts.flatMap(chart => chart.chartData.map(point => point[key]));
-      baseline = calculateDomain(values, padding);
+      baseline = calculateDomain(values, padding, key === 'y' ? 10 : 0, key === 'y' ? yMin : undefined, key === 'y' ? yMax : undefined);
     }
 
     // Merge with shared broadcasted extents if available
