@@ -8,7 +8,7 @@
   const vizComponents = {
     gust: MaximumGustKmh,
     humidity: RelativeHumidityPct,
-    rain: PrecipitationSince9amMM,
+    rainSince9am: PrecipitationSince9amMM,
     tempc: TempCSparklineViz
   };
   let ComponentToLoad = $derived.by(() => {

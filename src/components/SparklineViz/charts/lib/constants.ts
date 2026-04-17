@@ -38,7 +38,7 @@ export const metricProperties: Record<MetricType, MetricProps> = {
     colour: '#664CB3',
     darkColour: '#AB96EB'
   },
-  rain: {
+  rainSince9am: {
     name: 'Rainfall (since 9am)',
     editorialNotes: `Rainfall accumulates each day and resets at 9am local time.`,
     dataUrl: BASE_URL + '/assets/precipitationSince9amMM',
@@ -47,6 +47,18 @@ export const metricProperties: Record<MetricType, MetricProps> = {
     colour: '#007BC7',
     darkColour: '#0092ED'
   },
+  // TODO: this needs to be done on the backend
+  // rain: {
+  //   name: 'Rainfall (cumulative)',
+  //   editorialNotes: `Rainfall accumulates throughout the duration of the chart. This is derived from rainfall since 9am.`,
+  //   dataUrl: BASE_URL + '/assets/precipitationSince9amMM',
+  //   formatValue: (v: number) => `${v.toFixed(0)} mm`,
+  //   attribution: METRAWEATHER_ATTR,
+  //   colour: '#007BC7',
+  //   darkColour: '#0092ED'
+  // },
+
+  // TODO: this dataset is saved but not published yet
   // swell: {
   //   name: 'Swell',
   //   editorialNotes: `Height of swell waves (manual coastal observations only)`,

@@ -82,17 +82,6 @@
   let isActiveObservation = $derived($activeObservation !== null && data.includes($activeObservation as any));
   let activeDataPoint = $derived(isActiveObservation ? ($activeObservation as any as DataPoint) : null);
 
-  $effect(() => {
-    console.log(`[Chart:${name}] data extremes:`, {
-      minX: data.length > 0 ? Math.min(...data.map(d => d.x)) : null,
-      maxX: data.length > 0 ? Math.max(...data.map(d => d.x)) : null,
-      minY: data.length > 0 ? Math.min(...data.map(d => d.y)) : null,
-      maxY: data.length > 0 ? Math.max(...data.map(d => d.y)) : null
-    });
-    console.log(`[Chart:${name}] yDomain:`, yDomain);
-    console.log(`[Chart:${name}] xDomain:`, xDomain);
-  });
-
   // Format functions
   function formatAriaLabel(d: DataPoint): string {
     const value = formatValue(d.y);

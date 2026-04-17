@@ -15,7 +15,8 @@
     const charts = await fetchData({
       dataBaseUrl: metric.dataUrl,
       locations,
-      range: { startDate, endDate }
+      range: { startDate, endDate },
+      metric: 'humidity'
     });
 
     return { charts };

@@ -5,7 +5,7 @@
 
   let { locations = ['Brisbane', 'Sydney', 'Melbourne', 'Adelaide'], startDate = '', endDate = '' } = $props();
 
-  const metric = metricProperties.rain;
+  const metric = metricProperties.rainSince9am;
 </script>
 
 <SparklineViz
@@ -13,9 +13,9 @@
   placeholders={locations}
   loadData={async () => {
     const charts = await fetchData({
-      dataBaseUrl: metric.dataUrl,
       locations,
-      range: { startDate, endDate }
+      range: { startDate, endDate },
+      metric: 'rainSince9am'
     });
 
     return { charts };
