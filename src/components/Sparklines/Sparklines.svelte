@@ -4,7 +4,7 @@
   import RelativeHumidityPct from './RelativeHumidityPct.svelte';
   import TempCSparklineViz from './TempCSparklineViz.svelte';
 
-  let { vizType, locations = [], startDate = '', endDate = '' } = $props();
+  let { vizType, locations = [], startDate = '', endDate = '', twoColumns = true } = $props();
   const vizComponents = {
     gust: MaximumGustKmh,
     humidity: RelativeHumidityPct,
@@ -17,7 +17,7 @@
 </script>
 
 {#if ComponentToLoad}
-  <ComponentToLoad {locations} {startDate} {endDate} />
+  <ComponentToLoad {locations} {startDate} {endDate} {twoColumns} />
 {/if}
 
 {#if !ComponentToLoad}

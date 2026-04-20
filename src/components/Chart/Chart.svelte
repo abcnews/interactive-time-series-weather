@@ -116,6 +116,20 @@
     const maxChars = Math.max(...labels.map(l => l.length), 3);
     return Math.round(maxChars * 5.33 + 8);
   });
+  // Track when the chart is actually rendered and ready to be shown
+  let isReady = $state(false);
+
+  $effect(() => {
+    if (data.length > 0 && !isReady) {
+      // Wait for two frames to ensure the SVG children have processed their initial data
+      // and the browser has performed its first layout.
+      requestAnimationFrame(() => {
+        requestAnimationFrame(() => {
+          isReady = true;
+        });
+      });
+    }
+  });
 </script>
 
 <!-- This is a bubbled click handler to remove labels for touch events that have suitable alt text in the Observations <ol> -->
@@ -128,7 +142,13 @@
     &nbsp;
     {#if lastUpdated}Last updated {formatTime(lastUpdated)}{/if}
   </p>
-  <div role="figure" class="chart__figure" style:height="{height}px" aria-label={altText}>
+  <div
+    role="figure"
+    class="chart__figure"
+    class:is-ready={isReady}
+    style:height="{height}px"
+    aria-label={altText}
+  >
     {#if data.length > 0}
       <LayerCake
         {data}
@@ -207,10 +227,13 @@
     min-height: 100px;
     overflow: hidden;
     :global(.layercake-container) {
+      opacity: 0;
+    }
+    &.is-ready :global(.layercake-container) {
       animation: fadeIn 0.25s;
       animation-delay: calc(20ms * var(--index, 0));
       animation-duration: calc(400ms + 400ms * var(--index, 0));
-      animation-fill-mode: backwards;
+      animation-fill-mode: forwards;
     }
   }
   .chart__name {
@@ -218,7 +241,7 @@
     font-style: normal;
     font-weight: 700;
     line-height: 135%; /* 18.9px */
-    margin-bottom: 4px;
+    margin-bottom: 1px;
   }
   .chart__description {
     font-size: 12px;
@@ -233,6 +256,7 @@
     font-style: normal;
     font-weight: 400;
     line-height: 135%; /* 14.85px */
+    margin-bottom: 8px;
   }
   @media (min-width: 48em) {
     h2 {

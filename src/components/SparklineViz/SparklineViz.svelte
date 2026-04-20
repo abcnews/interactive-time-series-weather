@@ -86,6 +86,12 @@
      * Optional metric type for scale synchronization.
      */
     name?: string;
+
+    /**
+     * Whether to display charts in two columns on desktop.
+     * @default true
+     */
+    twoColumns?: boolean;
   }
 
   let {
@@ -99,7 +105,8 @@
     attribution,
     yMin,
     yMax,
-    name
+    name,
+    twoColumns = true
   }: SparklineVizProps = $props();
 
   // Internal utility for synchronizing domains across instances
@@ -164,7 +171,13 @@
       baseline = propDomain;
     } else if (charts.length > 0) {
       const values = charts.flatMap(chart => chart.chartData.map(point => point[key]));
-      baseline = calculateDomain(values, padding, key === 'y' ? 10 : 0, key === 'y' ? yMin : undefined, key === 'y' ? yMax : undefined);
+      baseline = calculateDomain(
+        values,
+        padding,
+        key === 'y' ? 10 : 0,
+        key === 'y' ? yMin : undefined,
+        key === 'y' ? yMax : undefined
+      );
     }
 
     // Merge with shared broadcasted extents if available
@@ -243,7 +256,7 @@
 </script>
 
 <div
-  class="app"
+  class="sparkline-viz"
   style:--weather-viz-colour={colour}
   style:--weather-viz-dark-colour={darkColour}
   bind:clientHeight
@@ -254,7 +267,7 @@
     }
   }}
 >
-  <div class="charts">
+  <div class="charts" class:is-two-column={twoColumns}>
     {#each displayCharts as chart, i}
       <div style:--index={i}>
         <Chart
@@ -287,13 +300,14 @@
       background: transparent;
     }
   }
-  .app {
+  .sparkline-viz {
+    container-type: inline-size;
     overflow: hidden;
 
     /* Unidied Theme Variables - Light Mode (Default) */
     --theme-text: #000;
     --theme-label: #6e7787;
-    --theme-axis: #ccc;
+    --theme-axis: #f0f0f0;
     --theme-grid: var(--theme-axis);
     --theme-shadow: rgba(255, 255, 255, 0.75);
     --theme-tooltip-bg: white;
@@ -304,7 +318,7 @@
     :global([data-scheme='dark']) & {
       --theme-text: #eee;
       --theme-label: #a0aec0;
-      --theme-axis: #4a5568;
+      --theme-axis: #808080;
       --theme-grid: var(--theme-axis);
       --theme-shadow: rgba(0, 0, 0, 0.75);
       --theme-tooltip-bg: #1a202c;
@@ -324,10 +338,16 @@
     }
   }
   .charts {
-    display: flex;
-    flex-direction: column;
-    gap: 0;
+    display: grid;
+    grid-template-columns: 1fr;
+    gap: 16px;
     margin-bottom: 20px;
+  }
+
+  @container (min-width: 400px) {
+    .charts.is-two-column {
+      grid-template-columns: 1fr 1fr;
+    }
   }
 
   .attribution {

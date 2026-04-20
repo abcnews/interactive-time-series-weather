@@ -62,10 +62,10 @@
   }
   .box-line {
     stroke: var(--theme-axis);
-    stroke-width: 1;
+    stroke-width: 1px;
   }
   .grid-line {
     stroke: var(--theme-grid);
-    stroke-width: 1;
+    stroke-width: 1px;
   }
 </style>

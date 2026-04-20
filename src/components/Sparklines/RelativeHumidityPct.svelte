@@ -3,13 +3,19 @@
   import { fetchData } from './fetchData';
   import { metricProperties } from '../../lib/chartTypes';
 
-  let { locations = ['Brisbane', 'Sydney', 'Melbourne', 'Adelaide'], startDate = '', endDate = '' } = $props();
+  let {
+    locations = ['Brisbane', 'Sydney', 'Melbourne', 'Adelaide'],
+    startDate = '',
+    endDate = '',
+    twoColumns = true
+  } = $props();
 
   const metric = metricProperties.humidity;
 </script>
 
 <SparklineViz
   {...metric}
+  {twoColumns}
   placeholders={locations}
   loadData={async () => {
     const charts = await fetchData({
