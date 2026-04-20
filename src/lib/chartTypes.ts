@@ -1,5 +1,7 @@
 import { BASE_URL } from './util';
-import type { MetricType, MetricProps } from '../types';
+import type { MetricType, MetricProps, ObservationType } from '../types';
+
+export type { MetricType, MetricProps, ObservationType };
 
 const METRAWEATHER_ATTR = "Times shown in user's local time. Source: MetraWeather.";
 

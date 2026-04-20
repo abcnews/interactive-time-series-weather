@@ -33,7 +33,7 @@ whenDOMReady.then(async () => {
 
   if (builderMountEl) {
     const appProps = acto(getMountValue(builderMountEl));
-    const builderModule = await import('./components/Builder/Builder.svelte');
+    const builderModule = await import(/* webpackChunkName: "builder" */ './components/Builder/Builder.svelte');
     mount(builderModule.default, {
       target: builderMountEl,
       props: appProps
