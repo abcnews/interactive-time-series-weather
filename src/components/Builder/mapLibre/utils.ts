@@ -58,5 +58,5 @@ function loadCss(url: string): Promise<void> {
  */
 export async function loadMapLibre(): Promise<typeof maplibregl> {
   await Promise.all([importModule(MAPLIBRE_JS_URL), loadCss(MAPLIBRE_CSS_URL)]);
-  return window.maplibregl as typeof maplibregl;
+  return (window as any).maplibregl as typeof maplibregl;
 }
