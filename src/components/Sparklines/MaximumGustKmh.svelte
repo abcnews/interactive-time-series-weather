@@ -19,7 +19,7 @@
   placeholders={locations}
   loadData={async () => {
     const charts = await fetchData({
-      dataBaseUrl: metric.dataUrl,
+      metric: 'gust',
       locations,
       range: { startDate, endDate }
     });

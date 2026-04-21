@@ -43,9 +43,10 @@ export async function fetchData({
   range = { startDate: '2026-01-01', endDate: '2026-01-07' },
   metric = ''
 }): Promise<Array<{ name: string; chartData: Array<{ x: number; y: number }> }>> {
-  const { dataUrl = '', parseValue = (num: number) => num } = metricProperties[metric];
+  const props = metricProperties[metric];
+  const { dataUrl = '', parseValue = (num: number) => num } = props;
   if (!dataUrl) {
-    throw new Error('baseUrl missing');
+    throw new Error(`baseUrl missing for metric "${metric}"`);
   }
   const [geojson, datasets] = await Promise.all([
     blockingFetch(LOCATIONS_URL).then(res => res.json() as Promise<LocationsFeatureCollection>),

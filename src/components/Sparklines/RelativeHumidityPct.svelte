@@ -19,7 +19,6 @@
   placeholders={locations}
   loadData={async () => {
     const charts = await fetchData({
-      dataBaseUrl: metric.dataUrl,
       locations,
       range: { startDate, endDate },
       metric: 'humidity'
