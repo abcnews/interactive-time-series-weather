@@ -307,7 +307,7 @@
     /* Unidied Theme Variables - Light Mode (Default) */
     --theme-text: #000;
     --theme-label: #6e7787;
-    --theme-axis: #f0f0f0;
+    --theme-axis: #f2f2f2;
     --theme-grid: var(--theme-axis);
     --theme-shadow: rgba(255, 255, 255, 0.75);
     --theme-tooltip-bg: white;
@@ -318,7 +318,7 @@
     :global([data-scheme='dark']) & {
       --theme-text: #eee;
       --theme-label: #a0aec0;
-      --theme-axis: #808080;
+      --theme-axis: #4d4d4d;
       --theme-grid: var(--theme-axis);
       --theme-shadow: rgba(0, 0, 0, 0.75);
       --theme-tooltip-bg: #1a202c;

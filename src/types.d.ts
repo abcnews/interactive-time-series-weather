@@ -40,7 +40,7 @@ export type LocationType = {
 };
 
 // Available Chart Metrics
-export type MetricType = 'gust' | 'rainSince9am' | 'humidity' | 'tempc';
+export type MetricType = 'gust' | 'rainSince9am' | 'humidity' | 'tempc' | 'rainCumulative';
 
 export type MetricProps = {
   name: string;

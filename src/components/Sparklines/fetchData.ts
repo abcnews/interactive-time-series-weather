@@ -72,6 +72,7 @@ export async function fetchData({
       const auroraId = feature!.properties.auroraId;
 
       const chartData: { x: number; y: number }[] = [];
+      let runningTotal = 0;
       datasets.forEach(dataset => {
         // Skip days where the fetch failed (null returned by fetchChunkedData).
         if (!dataset) return;
@@ -83,10 +84,20 @@ export async function fetchData({
         // absolute timestamp and apply any caller-supplied value transform.
         values?.forEach(([offsetMinutes, value]) => {
           const thisDate = new Date(Number(startDate) + offsetMinutes * 60 * 1000);
-          chartData.push({
-            x: thisDate.getTime(),
-            y: typeof value === 'number' ? parseValue(value) : value
-          });
+          const parsedValue = typeof value === 'number' ? parseValue(value) : value;
+
+          if (metric === 'rainCumulative' && typeof parsedValue === 'number') {
+            runningTotal += parsedValue;
+            chartData.push({
+              x: thisDate.getTime(),
+              y: runningTotal
+            });
+          } else {
+            chartData.push({
+              x: thisDate.getTime(),
+              y: parsedValue
+            });
+          }
         });
       });
 

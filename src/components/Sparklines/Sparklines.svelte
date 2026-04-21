@@ -2,6 +2,7 @@
   import MaximumGustKmh from './MaximumGustKmh.svelte';
   import PrecipitationSince9amMM from './PrecipitationSince9amMM.svelte';
   import RelativeHumidityPct from './RelativeHumidityPct.svelte';
+  import RainCumulative from './RainCumulative.svelte';
   import TempCSparklineViz from './TempCSparklineViz.svelte';
 
   let { vizType, locations = [], startDate = '', endDate = '', twoColumns = true } = $props();
@@ -9,6 +10,7 @@
     gust: MaximumGustKmh,
     humidity: RelativeHumidityPct,
     rainSince9am: PrecipitationSince9amMM,
+    rainCumulative: RainCumulative,
     tempc: TempCSparklineViz
   };
   let ComponentToLoad = $derived.by(() => {

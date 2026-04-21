@@ -39,6 +39,16 @@ export const metricProperties: Record<MetricType, MetricProps> = {
     darkColour: '#0092ED',
     yMin: 0
   },
+  rainCumulative: {
+    name: 'Rainfall',
+    editorialNotes: 'Rainfall accumulates over the duration of the chart.',
+    dataUrl: BASE_URL + '/assets/rainfallSpot',
+    formatValue: (v: number) => `${v.toFixed(1)} mm`,
+    attribution: METRAWEATHER_ATTR,
+    colour: '#007BC7',
+    darkColour: '#0092ED',
+    yMin: 0
+  },
   tempc: {
     name: 'Temperature (degrees celsius)',
     editorialNotes: ``,
