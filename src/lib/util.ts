@@ -1,6 +1,7 @@
 import { BroadcastBlocker } from './broadcastBlocker';
 
-export const LOCATIONS_URL = 'https://abcnewsdata.sgp1.digitaloceanspaces.com/data-time-series-weather/au.geo.json';
+export const BASE_URL = 'https://abcnewsdata.sgp1.digitaloceanspaces.com/data-time-series-weather';
+export const LOCATIONS_URL = BASE_URL + '/au.geo.json';
 
 let prevHeight = 0;
 

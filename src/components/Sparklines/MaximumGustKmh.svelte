@@ -1,30 +1,29 @@
 <script lang="ts">
-  import { interpolateRgbBasis } from 'd3-interpolate';
-  import { scaleSequential } from 'd3-scale';
   import SparklineViz from '../SparklineViz/SparklineViz.svelte';
-  import { fetchData, type ChartData } from './fetchData';
-  import { metricProperties } from '../SparklineViz/charts/lib/constants';
+  import { fetchData } from './fetchData';
+  import { metricProperties } from '../../lib/chartTypes';
 
-  let { locations = ['Brisbane', 'Sydney', 'Melbourne', 'Adelaide'], startDate = '', endDate = '' } = $props();
+  let {
+    locations = ['Brisbane', 'Sydney', 'Melbourne', 'Adelaide'],
+    startDate = '',
+    endDate = '',
+    twoColumns = true
+  } = $props();
 
-  // Wind speed configuration
-  const gradientColors = metricProperties.gust.gradientColours;
-  const formatValue = (v: number) => `${v.toFixed(0)} km/h`;
-  const gradientScale = scaleSequential([0, 100], interpolateRgbBasis(gradientColors));
+  const metric = metricProperties.gust;
 </script>
 
 <SparklineViz
+  {...metric}
+  {twoColumns}
   placeholders={locations}
-  loadData={async (): Promise<{ charts: ChartData[] }> => {
+  loadData={async () => {
     const charts = await fetchData({
-      dataBaseUrl: 'https://abcnewsdata.sgp1.digitaloceanspaces.com/data-time-series-weather/assets/maximumGustKmh',
+      metric: 'gust',
       locations,
       range: { startDate, endDate }
     });
 
     return { charts };
   }}
-  {formatValue}
-  {gradientScale}
-  attribution="Times shown in user's local time. Source: MetraWeather."
 />

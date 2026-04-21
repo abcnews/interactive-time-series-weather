@@ -1,30 +1,29 @@
 <script lang="ts">
-  import { interpolateRgbBasis } from 'd3-interpolate';
-  import { scaleSequential } from 'd3-scale';
   import SparklineViz from '../SparklineViz/SparklineViz.svelte';
-  import { fetchData, type ChartData } from './fetchData';
-  import { metricProperties } from '../SparklineViz/charts/lib/constants';
+  import { fetchData } from './fetchData';
+  import { metricProperties } from '../../lib/chartTypes';
 
-  let { locations = ['Brisbane', 'Sydney', 'Melbourne', 'Adelaide'], startDate = '', endDate = '' } = $props();
+  let {
+    locations = ['Brisbane', 'Sydney', 'Melbourne', 'Adelaide'],
+    startDate = '',
+    endDate = '',
+    twoColumns = true
+  } = $props();
 
-  const gradientColors = metricProperties.humidity.gradientColours;
-  const formatValue = (v: number) => `${v.toFixed(0)}%`;
-  const gradientScale = scaleSequential([0, 100], interpolateRgbBasis(gradientColors));
+  const metric = metricProperties.humidity;
 </script>
 
 <SparklineViz
+  {...metric}
+  {twoColumns}
   placeholders={locations}
-  loadData={async (): Promise<{ charts: ChartData[] }> => {
+  loadData={async () => {
     const charts = await fetchData({
-      dataBaseUrl:
-        'https://abcnewsdata.sgp1.digitaloceanspaces.com/data-time-series-weather/assets/relativeHumidityPct',
       locations,
-      range: { startDate, endDate }
+      range: { startDate, endDate },
+      metric: 'humidity'
     });
 
     return { charts };
   }}
-  {formatValue}
-  {gradientScale}
-  attribution="Times shown in user's local time. Source: MetraWeather."
 />

@@ -1,15 +1,16 @@
 <script lang="ts">
   import { BuilderStyleRoot, BuilderFrame, UpdateChecker, Typeahead, Loader } from '@abcnews/components-builder';
   import { onMount } from 'svelte';
-  import { LOCATIONS_URL } from '../util';
+  import { LOCATIONS_URL } from '../../lib/util';
   import Sparklines from '../Sparklines/Sparklines.svelte';
   import LocationPicker from './LocationPicker.svelte';
   import GeoLocationPicker from './GeoLocationPicker/GeoLocationPicker.svelte';
-  import { rawData } from '../SparklineViz/charts/lib/stores';
+  import { rawData } from '../Chart/lib/stores';
   const defaultParams = new URLSearchParams(location.hash.slice(1));
   // Initialize dynamic favicon
   import faviconUrl from './favicon.svg';
   import Favicon from '../Favicon/Favicon.svelte';
+  import { metricProperties } from '../../lib/chartTypes';
 
   let locations = $state(
     (
@@ -28,6 +29,7 @@
   );
   let endDate = $state(defaultParams.get('endDate') || new Date().toISOString().substring(0, 10));
   let scheme = $state(defaultParams.get('scheme') || 'auto');
+  let isTwoColumn = $state(defaultParams.get('columns') !== '1');
   let geojson = $state();
   let daysDifference = $derived.by(() => {
     if (!startDate || !endDate) return 0;
@@ -116,6 +118,9 @@
     if (scheme !== 'auto') {
       params.append('scheme', scheme);
     }
+    if (!isTwoColumn) {
+      params.append('columns', '1');
+    }
     window.location.hash = params.toString().replace(/%7C/g, '|').replace(/%2C/g, ',');
   });
 
@@ -166,8 +171,8 @@
 
 {#snippet Viz()}
   <div class="frame" data-scheme={scheme === 'auto' ? null : scheme}>
-    {#key locations.join() + startDate + endDate + scheme}
-      <Sparklines {vizType} {locations} {startDate} {endDate} />
+    {#key locations.join() + startDate + endDate + scheme + isTwoColumn}
+      <Sparklines {vizType} {locations} {startDate} {endDate} twoColumns={isTwoColumn} />
     {/key}
   </div>
 {/snippet}
@@ -176,27 +181,16 @@
   <fieldset class="chart-type">
     <legend>Chart type</legend>
     <div class="radio-group">
-      <label>
-        <input type="radio" name="vizType" value="tempc" bind:group={vizType} />
-        Temperature
-      </label>
-      <label>
-        <input type="radio" name="vizType" value="wind" bind:group={vizType} />
-        Wind (average)
-      </label>
-      <label>
-        <input type="radio" name="vizType" value="gust" bind:group={vizType} />
-        Wind (max gust)
-      </label>
-      <label>
-        <input type="radio" name="vizType" value="rain" bind:group={vizType} />
-        Rainfall since 9am
-      </label>
-      <label>
-        <input type="radio" name="vizType" value="humidity" bind:group={vizType} />
-        Relative Humidity
-      </label>
+      {#each Object.entries(metricProperties) as [key, metric]}
+        <label>
+          <input type="radio" name="vizType" value={key} bind:group={vizType} />
+          {metric.name}
+        </label>{' '}
+      {/each}
     </div>
+    <small>
+      {metricProperties[vizType]?.editorialNotes}
+    </small>
   </fieldset>
   <fieldset>
     <legend>Locations</legend>
@@ -235,19 +229,13 @@
     {/if}
   </fieldset>
   <fieldset>
-    <legend>Iframe url</legend>
-    <input readonly value={iframeUrl} />
-  </fieldset>
-  <fieldset>
-    <legend>Tools</legend>
-    <button onclick={bulkPasteLocations}>Bulk paste locations</button>
-    <button onclick={loadFromIframeUrl}>Load from iframe URL</button>
-    <GeoLocationPicker {geojson} onClick={newLocations => (locations = newLocations)} {locations} />
-    <button onclick={csvExport}>Export as CSV</button>
-  </fieldset>
-  <fieldset>
-    <legend>Colour scheme</legend>
-    <small>Leave this on Auto unless you're embedding in an Odyssey.</small>
+    <legend>Display</legend>
+    <label>
+      <input type="checkbox" bind:checked={isTwoColumn} />
+      Two-columns on desktop
+    </label>
+    <hr />
+    <small>Colour scheme. Leave on Auto unless you're embedding in an Odyssey.</small>
     <div class="radio-group">
       <label>
         <input type="radio" name="scheme" value="auto" bind:group={scheme} />
@@ -262,6 +250,17 @@
         Light
       </label>
     </div>
+  </fieldset>
+  <fieldset>
+    <legend>Iframe url</legend>
+    <input readonly value={iframeUrl} />
+  </fieldset>
+  <fieldset>
+    <legend>Tools</legend>
+    <button onclick={bulkPasteLocations}>Bulk paste locations</button>
+    <button onclick={loadFromIframeUrl}>Load from iframe URL</button>
+    <GeoLocationPicker {geojson} onClick={newLocations => (locations = newLocations)} {locations} />
+    <button onclick={csvExport}>Export as CSV</button>
   </fieldset>
   <UpdateChecker />
 {/snippet}

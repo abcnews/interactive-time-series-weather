@@ -1,10 +1,11 @@
 <script lang="ts">
-  import Chart from './charts/Chart.svelte';
+  import Chart from '../Chart/Chart.svelte';
   import { intersectionObserver } from './useIntersectionObserver.js';
-  import { emitResize } from '../util';
-  import { calculateDomain } from './charts/lib/utils';
+  import { emitResize } from '../../lib/util';
+  import { calculateDomain } from '../Chart/lib/utils';
   import { untrack } from 'svelte';
-  import { rawData } from './charts/lib/stores';
+  import { extentStores, rawData } from '../Chart/lib/stores';
+  import type { MetricType } from '../../lib/chartTypes';
 
   /**
    * Props for the SparklineViz component.
@@ -30,10 +31,12 @@
       yDomain?: [number, number];
       /** Optional override for x-axis domain */
       xDomain?: [number, number];
-      /** Optional override for gradient scale function */
-      gradientScale?: (value: number) => string;
       /** Optional override for value formatting function */
       formatValue?: (value: number) => string;
+      /** Optional override for solid colour */
+      colour?: string;
+      /** Optional override for dark mode solid colour */
+      darkColour?: string;
     }>;
 
     /**
@@ -54,12 +57,41 @@
     /**
      * Scale function for mapping values to colors.
      */
-    gradientScale?: (value: number) => string;
+
+    /**
+     * Solid colour for the chart.
+     */
+    colour?: string;
+
+    /**
+     * Solid colour for the chart in dark mode.
+     */
+    darkColour?: string;
 
     /**
      * Free text attribution to display below the charts.
      */
     attribution?: string;
+    /**
+     * Optional hard minimum limit for y-axis.
+     */
+    yMin?: number;
+
+    /**
+     * Optional hard maximum limit for y-axis.
+     */
+    yMax?: number;
+
+    /**
+     * Optional metric type for scale synchronization.
+     */
+    name?: string;
+
+    /**
+     * Whether to display charts in two columns on desktop.
+     * @default true
+     */
+    twoColumns?: boolean;
   }
 
   let {
@@ -68,9 +100,99 @@
     formatValue: formatValueProp,
     yDomain: yDomainProp,
     xDomain: xDomainProp,
-    gradientScale: gradientScaleProp,
-    attribution
+    colour: colourProp,
+    darkColour: darkColourProp,
+    attribution,
+    yMin,
+    yMax,
+    name,
+    twoColumns = true
   }: SparklineVizProps = $props();
+
+  // Internal utility for synchronizing domains across instances
+  let sharedExtents = $state<{ y: [number, number]; x: [number, number] } | undefined>();
+
+  // Subscribe to shared extents from the broadcast channel
+  $effect(() => {
+    if (name && extentStores[name]) {
+      const unsubscribe = extentStores[name].subscribe(value => {
+        sharedExtents = value;
+      });
+      return unsubscribe;
+    }
+  });
+
+  // Update shared extents based on local data
+  $effect(() => {
+    if (name && extentStores[name] && charts.length > 0) {
+      const allYValues = charts.flatMap(chart => chart.chartData.map(point => point.y));
+      const allXValues = charts.flatMap(chart => chart.chartData.map(point => point.x));
+
+      const localYDomain = calculateDomain(allYValues);
+      const localXDomain = calculateDomain(allXValues, 0);
+
+      extentStores[name].update(current => {
+        const nextY: [number, number] = [
+          Math.min(current?.y[0] ?? Infinity, localYDomain[0]),
+          Math.max(current?.y[1] ?? -Infinity, localYDomain[1])
+        ];
+        const nextX: [number, number] = [
+          Math.min(current?.x[0] ?? Infinity, localXDomain[0]),
+          Math.max(current?.x[1] ?? -Infinity, localXDomain[1])
+        ];
+
+        if (
+          current?.y[0] === nextY[0] &&
+          current?.y[1] === nextY[1] &&
+          current?.x[0] === nextX[0] &&
+          current?.x[1] === nextX[1]
+        ) {
+          return current;
+        }
+
+        return { y: nextY, x: nextX };
+      });
+    }
+  });
+
+  /**
+   * Internal helper to calculate the domain for either X or Y axis.
+   */
+  function calculateBaseDomain(key: 'x' | 'y', padding: number) {
+    const propDomain = key === 'x' ? xDomainProp : yDomainProp;
+    const overrideDomain = key === 'x' ? overrides.xDomain : overrides.yDomain;
+
+    // Determine the baseline domain
+    let baseline: [number, number] = [0, 100];
+
+    if (overrideDomain) {
+      baseline = overrideDomain;
+    } else if (propDomain) {
+      baseline = propDomain;
+    } else if (charts.length > 0) {
+      const values = charts.flatMap(chart => chart.chartData.map(point => point[key]));
+      baseline = calculateDomain(
+        values,
+        padding,
+        key === 'y' ? 10 : 0,
+        key === 'y' ? yMin : undefined,
+        key === 'y' ? yMax : undefined
+      );
+    }
+
+    // Merge with shared broadcasted extents if available
+    if (sharedExtents?.[key]) {
+      return [Math.min(baseline[0], sharedExtents[key][0]), Math.max(baseline[1], sharedExtents[key][1])] as [
+        number,
+        number
+      ];
+    }
+
+    return baseline;
+  }
+
+  let xDomain = $derived(calculateBaseDomain('x', 0));
+  let yDomain = $derived(calculateBaseDomain('y', 0.1));
 
   let charts = $state<
     Array<{
@@ -85,44 +207,14 @@
   let overrides = $state<{
     yDomain?: [number, number];
     xDomain?: [number, number];
-    gradientScale?: (value: number) => string;
     formatValue?: (value: number) => string;
+    colour?: string;
+    darkColour?: string;
   }>({});
 
   let formatValue = $derived(overrides.formatValue ?? formatValueProp);
-  let gradientScale = $derived(overrides.gradientScale ?? gradientScaleProp);
-
-  let yDomain = $derived.by<[number, number]>(() => {
-    // Use override if provided
-    if (overrides.yDomain) return overrides.yDomain;
-
-    // Use prop if provided
-    if (yDomainProp) return yDomainProp;
-
-    // Calculate default domain from chart data
-    if (charts.length > 0) {
-      const allYValues = charts.flatMap(chart => chart.chartData.map(point => point.y));
-      return calculateDomain(allYValues);
-    }
-
-    return [0, 100];
-  });
-
-  let xDomain = $derived.by<[number, number]>(() => {
-    // Use override if provided
-    if (overrides.xDomain) return overrides.xDomain;
-
-    // Use prop if provided
-    if (xDomainProp) return xDomainProp;
-
-    // Calculate default domain from chart data
-    if (charts.length > 0) {
-      const allXValues = charts.flatMap(chart => chart.chartData.map(point => point.x));
-      return calculateDomain(allXValues, 0);
-    }
-
-    return [0, 100];
-  });
+  let colour = $derived(overrides.colour ?? colourProp);
+  let darkColour = $derived(overrides.darkColour ?? darkColourProp);
 
   // Create a derived version of charts that returns placeholders when data is loading
   let displayCharts = $derived(
@@ -154,8 +246,9 @@
         overrides = {
           yDomain: result.yDomain,
           xDomain: result.xDomain,
-          gradientScale: result.gradientScale,
-          formatValue: result.formatValue
+          formatValue: result.formatValue,
+          colour: result.colour,
+          darkColour: result.darkColour
         };
       });
     }
@@ -163,7 +256,9 @@
 </script>
 
 <div
-  class="app"
+  class="sparkline-viz"
+  style:--weather-viz-colour={colour}
+  style:--weather-viz-dark-colour={darkColour}
   bind:clientHeight
   use:intersectionObserver={{
     threshold: 0.1,
@@ -172,17 +267,18 @@
     }
   }}
 >
-  <div class="charts">
+  <div class="charts" class:is-two-column={twoColumns}>
     {#each displayCharts as chart, i}
-      <div style:--delay="{i * 0.5}ms">
+      <div style:--index={i}>
         <Chart
           name={chart.name}
+          description={name}
           altText={`A chart shows temperatures at ${chart.name}`}
           data={chart.chartData}
           {formatValue}
           {yDomain}
           {xDomain}
-          {gradientScale}
+          colour="var(--weather-viz-metric-colour)"
         />
       </div>
     {/each}
@@ -204,20 +300,60 @@
       background: transparent;
     }
   }
-  .app {
+  .sparkline-viz {
+    container-type: inline-size;
     overflow: hidden;
+
+    /* Unidied Theme Variables - Light Mode (Default) */
+    --theme-text: #000;
+    --theme-label: #6e7787;
+    --theme-axis: #f2f2f2;
+    --theme-grid: var(--theme-axis);
+    --theme-shadow: rgba(255, 255, 255, 0.75);
+    --theme-tooltip-bg: white;
+    --weather-viz-metric-colour: var(--weather-viz-colour);
+
+    /* Scoped Dark Mode Overrides */
+    &:global([data-scheme='dark']),
+    :global([data-scheme='dark']) & {
+      --theme-text: #eee;
+      --theme-label: #a0aec0;
+      --theme-axis: #4d4d4d;
+      --theme-grid: var(--theme-axis);
+      --theme-shadow: rgba(0, 0, 0, 0.75);
+      --theme-tooltip-bg: #1a202c;
+      --weather-viz-metric-colour: var(--weather-viz-dark-colour);
+    }
+
+    /* Force Light Mode (if nested) */
+    &:global([data-scheme='light']),
+    :global([data-scheme='light']) & {
+      --theme-text: #000;
+      --theme-label: #6e7787;
+      --theme-axis: #ccc;
+      --theme-grid: var(--theme-axis);
+      --theme-shadow: rgba(255, 255, 255, 0.75);
+      --theme-tooltip-bg: white;
+      --weather-viz-metric-colour: var(--weather-viz-colour);
+    }
   }
   .charts {
-    display: flex;
-    flex-direction: column;
-    gap: 50px;
+    display: grid;
+    grid-template-columns: 1fr;
+    gap: 16px;
     margin-bottom: 20px;
   }
 
+  @container (min-width: 400px) {
+    .charts.is-two-column {
+      grid-template-columns: 1fr 1fr;
+    }
+  }
+
   .attribution {
-    font-family: ABCSans;
-    border-radius: 1000px;
-    padding: 2px 0;
-    display: inline-block;
+    font-size: 12px;
+    font-style: normal;
+    font-weight: 400;
+    line-height: 135%; /* 16.2px */
   }
 </style>

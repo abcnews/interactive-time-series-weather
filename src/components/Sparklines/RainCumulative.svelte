@@ -10,7 +10,7 @@
     twoColumns = true
   } = $props();
 
-  const metric = metricProperties.tempc;
+  const metric = metricProperties.rainCumulative;
 </script>
 
 <SparklineViz
@@ -21,7 +21,7 @@
     const charts = await fetchData({
       locations,
       range: { startDate, endDate },
-      metric: 'tempc'
+      metric: 'rainCumulative'
     });
 
     return { charts };
