@@ -40,7 +40,3 @@ whenDOMReady.then(async () => {
     });
   }
 });
-
-if (process.env.NODE_ENV === 'development') {
-  console.debug(`[interactive-time-series-weather-map] public path: ${__webpack_public_path__}`);
-}

@@ -1,7 +1,6 @@
 import type { LocationsFeatureCollection, TimeSeriesData } from '../../types';
 import { metricProperties } from '../../lib/chartTypes';
 import { blockingFetch, LOCATIONS_URL } from '../../lib/util';
-let i = 0;
 /**
  * Data is chunked by day, so when we fetch a date range we must fetch the file
  * for each day individually. For perf reasons let's not select more than 2 wks.
@@ -20,10 +19,7 @@ async function fetchChunkedData(dataBaseUrl: string, { startDate = '', endDate =
     urls.map(url =>
       blockingFetch(url)
         .then(async res => {
-          const id = i++;
-          console.time('parse' + i);
           const ret = await res.json();
-          console.timeEnd('parse' + i);
           return ret;
         })
         .catch(e => {
@@ -101,7 +97,13 @@ export async function fetchData({
         });
       });
 
-      return { name, chartData };
+      // Sort accurately by timestamp to handle any out-of-order points or boundary leaks
+      // and remove any exact duplicates to keep the line clean.
+      const sortedData = chartData
+        .sort((a, b) => a.x - b.x)
+        .filter((d, i, arr) => i === 0 || d.x !== arr[i - 1].x);
+
+      return { name, chartData: sortedData };
     });
 
   return data;

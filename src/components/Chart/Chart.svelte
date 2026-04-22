@@ -130,6 +130,7 @@
       });
     }
   });
+
 </script>
 
 <!-- This is a bubbled click handler to remove labels for touch events that have suitable alt text in the Observations <ol> -->
