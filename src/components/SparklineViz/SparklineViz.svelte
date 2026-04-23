@@ -330,7 +330,7 @@
     :global([data-scheme='light']) & {
       --theme-text: #000;
       --theme-label: #6e7787;
-      --theme-axis: #ccc;
+      --theme-axis: #f2f2f2;
       --theme-grid: var(--theme-axis);
       --theme-shadow: rgba(255, 255, 255, 0.75);
       --theme-tooltip-bg: white;
