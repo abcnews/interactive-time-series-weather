@@ -60,7 +60,6 @@
   {#each visibleTicks as tick}
     {@const xPos = Math.round($xScale(tick))}
     <g class="tick" transform="translate({xPos}, {Math.round($height)})">
-      <!-- No ticks requested. y=28 provides a ~20px gap between chart bottom and top of 10px text -->
       <text y="20" text-anchor={getAnchor(tick)} class="tick-label">
         {formatTick(tick)}
       </text>
@@ -71,7 +70,7 @@
 <style>
   .tick-label {
     fill: var(--theme-label);
-    font-size: 10px;
+    font-size: 12px;
     font-style: normal;
     font-weight: 400;
     line-height: normal;

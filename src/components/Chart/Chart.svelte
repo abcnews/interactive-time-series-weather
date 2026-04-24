@@ -111,10 +111,11 @@
   // Plus 8px for label offset, no extra gutter to keep it tight.
   let leftPadding = $derived.by(() => {
     const domain = yDomain || calculateDomain(values, 0.1);
-    // Axis ticks use the raw value or simple formatting - we assume up to 3-4 chars
-    const labels = [Math.round(domain[0]).toString(), Math.round(domain[1]).toString()];
-    const maxChars = Math.max(...labels.map(l => l.length), 3);
-    return Math.round(maxChars * 5.33 + 8);
+    // Use formatted labels to calculate required padding
+    const labels = [formatValue(domain[0]), formatValue(domain[1])];
+    const maxChars = Math.max(...labels.map(l => l.length), 4);
+    // Adjusted estimation for ABCSans (~5.5px per char) plus label offset
+    return Math.round(maxChars * 5.5 + 8);
   });
   // Track when the chart is actually rendered and ready to be shown
   let isReady = $state(false);
@@ -238,10 +239,10 @@
     }
   }
   .chart__name {
-    font-size: 14px;
+    font-size: 18px;
     font-style: normal;
-    font-weight: 700;
-    line-height: 135%; /* 18.9px */
+    font-weight: 600;
+    line-height: 135%;
     margin-bottom: 1px;
   }
   .chart__description {
@@ -253,15 +254,15 @@
   .chart__last-updated {
     color: #6e7787;
     text-align: right;
-    font-size: 11px;
+    font-size: 12px;
     font-style: normal;
     font-weight: 400;
-    line-height: 135%; /* 14.85px */
+    line-height: 135%;
     margin-bottom: 8px;
   }
   @media (min-width: 48em) {
     h2 {
-      font-size: 1.25rem;
+      font-size: 18px;
     }
   }
   @keyframes fadeIn {

@@ -2,12 +2,12 @@
   import { getContext } from 'svelte';
 
   let { class: className } = $props();
-  const { yScale, width, height } = getContext<any>('LayerCake');
-
+  const { yScale, width, height, custom } = getContext<any>('LayerCake');
+ 
   /**
    * Raw number formatting for Y axis.
    */
-  const formatTick = (d: number) => d.toString();
+  const formatTick = (d: number) => $custom.formatValue(d);
 
   // Get ticks from the scale
   let ticks = $derived($yScale.ticks(4));
