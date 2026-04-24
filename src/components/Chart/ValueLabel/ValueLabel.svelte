@@ -21,7 +21,7 @@
   let height = $state(0);
   const { xGet, yGet, width: chartWidth, height: chartHeight } = getContext<any>('LayerCake');
 
-  const margin = 10;
+  const margin = 4;
 
   // Persistent state for current alignment flips
   let hAlign = $state<'center' | 'left' | 'right'>('center');

@@ -8,19 +8,21 @@
 
   import { getContext, untrack } from 'svelte';
 
-  let {
-    data,
-    value,
-    timeDisplay,
-    alignment = 'above',
-    class: className
-  }: Props = $props();
+  interface Props {
+    data: any;
+    value: string;
+    timeDisplay?: string;
+    alignment?: 'above' | 'below';
+    class?: string;
+  }
+
+  let { data, value, timeDisplay, alignment = 'above', class: className }: Props = $props();
 
   let width = $state(0);
   let height = $state(0);
   const { xGet, yGet, width: chartWidth, height: chartHeight } = getContext<any>('LayerCake');
 
-  const margin = 10;
+  const margin = 4;
 
   // Persistent state for current alignment flips
   let hAlign = $state<'center' | 'left' | 'right'>('center');
@@ -106,11 +108,11 @@
   }
 
   .align-left {
-    transform: translate(calc(-100% - 10px), 0);
+    transform: translate(calc(-100% - 4px), 0);
   }
 
   .align-right {
-    transform: translate(10px, 0);
+    transform: translate(4px, 0);
   }
 
   time {
