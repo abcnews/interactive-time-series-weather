@@ -19,7 +19,7 @@
   import ObservationsTable from './ObservationsTable/ObservationsTable.svelte';
   import AxisX from './AxisX/AxisX.svelte';
   import AxisY from './AxisY/AxisY.svelte';
-  import { calculateDomain } from './lib/utils';
+  import { calculateDomain, estimateTextWidth } from './lib/utils';
 
   interface DataPoint {
     x: number;
@@ -111,11 +111,10 @@
   // Plus 8px for label offset, no extra gutter to keep it tight.
   let leftPadding = $derived.by(() => {
     const domain = yDomain || calculateDomain(values, 0.1);
-    // Use formatted labels to calculate required padding
     const labels = [formatValue(domain[0]), formatValue(domain[1])];
-    const maxChars = Math.max(...labels.map(l => l.length), 4);
-    // Adjusted estimation for ABCSans (~5.5px per char) plus label offset
-    return Math.round(maxChars * 5.5 + 8);
+
+    const maxWidth = Math.max(...labels.map(estimateTextWidth), 25);
+    return Math.round(maxWidth + 8);
   });
   // Track when the chart is actually rendered and ready to be shown
   let isReady = $state(false);

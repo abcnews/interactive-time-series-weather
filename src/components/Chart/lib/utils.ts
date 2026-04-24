@@ -58,3 +58,20 @@ export function calculateDomain(
 
   return [min, max];
 }
+
+/**
+ * Estimates the width of a string in ABCSans 8px.
+ * Narrow characters like ., -, and ° take up significantly less horizontal space.
+ * This is close enough to work, and significantly faster than trying to copyfit.
+ * @param str The string to estimate the width of
+ * @returns Estimated width in pixels
+ */
+export function estimateTextWidth(str: string): number {
+  let width = 0;
+  for (const char of str) {
+    if (/[0-9a-zA-Z]/.test(char)) width += 5.5;
+    else if (/[.\-°\s,]/.test(char)) width += 2.8;
+    else width += 5;
+  }
+  return width;
+}
