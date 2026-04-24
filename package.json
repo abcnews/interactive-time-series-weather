@@ -42,7 +42,7 @@
     "@abcnews/alternating-case-to-object": "^3.2.0",
     "@abcnews/aunty": "github:abcnews/aunty#feat/buildserve",
     "@abcnews/components-builder": "^0.0.20",
-    "@abcnews/components-storylab": "^0.0.1",
+    "@abcnews/components-storylab": "^0.3.1",
     "@abcnews/env-utils": "^6.0.0",
     "@abcnews/mount-utils": "^3.0.0",
     "@types/geojson": "^7946.0.16",

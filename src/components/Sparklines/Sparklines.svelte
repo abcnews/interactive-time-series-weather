@@ -4,6 +4,7 @@
   import RelativeHumidityPct from './RelativeHumidityPct.svelte';
   import RainCumulative from './RainCumulative.svelte';
   import TempCSparklineViz from './TempCSparklineViz.svelte';
+  import NewsWebPadding from '../NewsWebPadding/NewsWebPadding.svelte';
 
   let { vizType, locations = [], startDate = '', endDate = '', twoColumns = true } = $props();
   const vizComponents = {
@@ -18,10 +19,12 @@
   });
 </script>
 
-{#if ComponentToLoad}
-  <ComponentToLoad {locations} {startDate} {endDate} {twoColumns} />
-{/if}
+<NewsWebPadding>
+  {#if ComponentToLoad}
+    <ComponentToLoad {locations} {startDate} {endDate} {twoColumns} />
+  {/if}
 
-{#if !ComponentToLoad}
-  <p>viz=${JSON.stringify(vizType)} not found. Must be one of {Object.keys(vizComponents)}</p>
-{/if}
+  {#if !ComponentToLoad}
+    <p>viz=${JSON.stringify(vizType)} not found. Must be one of {Object.keys(vizComponents)}</p>
+  {/if}
+</NewsWebPadding>
