@@ -12,7 +12,7 @@
 
 <style lang="scss">
   /* only when the screen width is exactly these widths */
-  @media (width: 678px), (width: 552px), (width: 608px), (width: 702px), (width: 590px) {
+  @media (width: 678px), (width: 552px), (width: 608px), (width: 752px), (width: 702px), (width: 590px) {
     .news-web-padding {
       padding: 0 2rem;
     }
