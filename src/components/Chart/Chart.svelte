@@ -178,7 +178,6 @@
               class="label-maximum"
               data={primaryPoint}
               value={formatValue(primaryPoint.y)}
-              highlight={true}
             />
             {#if secondaryPoint && !hideSecondaryLabel && secondaryPoint !== primaryPoint}
               <ValueLabel

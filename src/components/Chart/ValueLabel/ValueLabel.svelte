@@ -93,13 +93,13 @@
     font-size: 12px;
     font-style: normal;
     font-weight: 400;
-    line-height: normal;
+    line-height: 135%;
     transition: all 0.2s ease;
     pointer-events: none;
     -webkit-font-smoothing: antialiased;
   }
 
   .highlight text {
-    font-weight: 700;
+    font-weight: 400;
   }
 </style>

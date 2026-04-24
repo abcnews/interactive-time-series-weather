@@ -100,7 +100,7 @@
     font-size: 12px;
     font-style: normal;
     font-weight: 400;
-    line-height: 15px;
+    line-height: 135%;
     white-space: nowrap;
     transition: transform 0.2s ease;
     pointer-events: none;
