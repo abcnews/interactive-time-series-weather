@@ -18,14 +18,16 @@
   const { xScale, width, height, padding } = getContext<any>('LayerCake');
 
   // Initialize the interaction hook
-  const handlers = useInteraction({ 
-    ...props, 
-    xScale, 
+  const handlers = useInteraction({
+    ...props,
+    xScale,
     padding: $padding,
-    observationHandlingLeave 
+    observationHandlingLeave
   });
 </script>
 
+<!-- We have the table as alt text already, so this isn't necessary -->
+<!-- svelte-ignore a11y_no_static_element_interactions -->
 <rect
   class="interaction-layer"
   x={-$padding.left}
@@ -37,10 +39,17 @@
   onpointerdown={handlers.onpointerdown}
   onpointermove={handlers.onpointermove}
   onpointerleave={handlers.onpointerleave}
+  onpointerup={handlers.onpointerup}
+  onpointercancel={handlers.onpointercancel}
+  oncontextmenu={e => e.preventDefault()}
 />
 
 <style>
   .interaction-layer {
     touch-action: pan-y;
+    -webkit-tap-highlight-color: transparent;
+    -webkit-touch-callout: none;
+    user-select: none;
+    -webkit-user-select: none;
   }
 </style>

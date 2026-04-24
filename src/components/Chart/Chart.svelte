@@ -226,6 +226,11 @@
     width: 100%;
     min-height: 100px;
     overflow: hidden;
+    touch-action: pan-y;
+    user-select: none;
+    -webkit-user-select: none;
+    -webkit-touch-callout: none;
+    -webkit-tap-highlight-color: transparent;
     :global(.layercake-container) {
       opacity: 0;
     }

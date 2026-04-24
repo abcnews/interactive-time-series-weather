@@ -15,7 +15,7 @@ export function useInteraction(params) {
     // Use getBoundingClientRect for robust coordinate calculation.
     const rect = event.currentTarget.getBoundingClientRect();
     let x = event.clientX - rect.left;
-    
+
     // Adjust x if the interaction layer includes padding (expanded to full SVG surface)
     if (params.padding && params.padding.left) {
       x -= params.padding.left;
@@ -23,7 +23,7 @@ export function useInteraction(params) {
 
     // Scale handling: Standardise extraction from potential Svelte stores or functions
     const scale = typeof xScale === 'function' ? xScale : get(xScale);
-    
+
     if (!scale || typeof scale.invert !== 'function') return null;
 
     // Clamp x to the chart area range [0, width]
@@ -38,12 +38,23 @@ export function useInteraction(params) {
 
     const d0 = data[index - 1];
     const d1 = data[index];
-    
+
     return xVal - d0.x > d1.x - xVal ? d1 : d0;
   }
 
   return {
+    /**
+     * Start the interaction and lock the pointer to this element.
+     * setPointerCapture ensures that even if the finger moves outside the chart
+     * or at small diagonals, the browser continues to send us events rather than
+     * immediately starting a scroll if we haven't crossed the scroll threshold.
+     */
     onpointerdown: (event) => {
+      try {
+        event.currentTarget.setPointerCapture(event.pointerId);
+      } catch (e) {
+        // Ignore errors for devices/browsers that don't support capture or for invalid pointer IDs
+      }
       const point = findPoint(event);
       if (point) params.onenter(point);
     },
@@ -51,14 +62,27 @@ export function useInteraction(params) {
       const point = findPoint(event);
       if (point) params.onenter(point);
     },
+    /**
+     * Clear the hover state when the pointer leaves the element (mouse only).
+     */
     onpointerleave: (event) => {
       if (params.observationHandlingLeave && typeof params.observationHandlingLeave.set === 'function') {
         params.observationHandlingLeave.set(true);
       }
-      
-      // Don't clear active state on touch to allow label persistence
-      if (event.pointerType === 'touch') return;
-      
+
+      params.onleave();
+    },
+    /**
+     * Ensure we clear the state when the user lifts their finger or mouse button.
+     */
+    onpointerup: () => {
+      params.onleave();
+    },
+    /**
+     * If the browser takes over (e.g. starting a vertical scroll), immediately
+     * clear the interactive labels to avoid "stuck" tooltips.
+     */
+    onpointercancel: () => {
       params.onleave();
     }
   };
