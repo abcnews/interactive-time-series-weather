@@ -304,7 +304,6 @@
     container-type: inline-size;
     overflow: hidden;
 
-    /* Unidied Theme Variables - Light Mode (Default) */
     --theme-text: #000;
     --theme-label: #6e7787;
     --theme-axis: #f2f2f2;
