@@ -23,10 +23,9 @@
     }
   },
   "scripts": {
-    "start": "aunty serve",
-    "dev": "aunty serve",
-    "build": "aunty build",
-    "test": "aunty test"
+    "start": "vite dev",
+    "dev": "vite dev",
+    "build": "vite build"
   },
   "devDependencies": {
     "@sveltejs/vite-plugin-svelte": "^7.0.0",
@@ -40,7 +39,7 @@
   },
   "dependencies": {
     "@abcnews/alternating-case-to-object": "^3.2.0",
-    "@abcnews/aunty": "github:abcnews/aunty#feat/buildserve",
+    "@abcnews/aunty": "^17.0.0-next.10",
     "@abcnews/components-builder": "^0.0.20",
     "@abcnews/components-storylab": "^0.3.1",
     "@abcnews/env-utils": "^6.0.0",
