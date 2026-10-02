@@ -46,7 +46,10 @@
   );
 
   function bulkPasteLocations() {
-    const input = prompt('Paste locations one per line (e.g. from a spreadsheet)', locations.join('\n'));
+    const input = prompt(
+      'Paste locations one per line (e.g. from a spreadsheet), or from a previous iframe url',
+      locations.join('\n')
+    );
     if (input === null) {
       return;
     }
@@ -127,6 +130,12 @@
   let iframeUrl = $derived.by(
     () => `https://${location.host}${location.pathname.replace(/\/builder\/?/, '/')}?${hash}&abcnewsembedheight=600`
   );
+  function formatIsoWithTimezone(ts, tzHours) {
+    const pad = n => String(n).padStart(2, '0');
+    const abs = Math.abs(tzHours);
+    const offset = `${tzHours < 0 ? '-' : '+'}${pad(Math.floor(abs))}${pad(Math.round((abs % 1) * 60))}`;
+    return new Date(ts + tzHours * 3600000).toISOString().replace(/\.\d{3}Z$/, offset);
+  }
 
   function csvExport() {
     const data = $rawData;
@@ -139,13 +148,12 @@
     const timestamps = Array.from(new Set(data.flatMap(d => d.chartData.map(p => p.x)))).sort((a, b) => a - b);
 
     // Create header row
-    const headers = ['Date', ...data.map(d => d.name)];
+    const headers = ['Date', 'Date (AEST)', ...data.map(d => d.name)];
     const rows = [headers];
 
     // Create data rows
     timestamps.forEach(ts => {
-      const date = new Date(ts);
-      const row = [`${date.toLocaleDateString()} ${date.toLocaleTimeString()}`];
+      const row = [new Date(ts).toISOString(), formatIsoWithTimezone(ts, 10)];
       data.forEach(locationData => {
         const point = locationData.chartData.find(p => p.x === ts);
         row.push(point ? point.y.toString() : '');
