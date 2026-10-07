@@ -216,14 +216,14 @@
   let colour = $derived(overrides.colour ?? colourProp);
   let darkColour = $derived(overrides.darkColour ?? darkColourProp);
 
-  // Create a derived version of charts that returns placeholders when data is loading
+  // Create a derived version of charts that returns placeholders with empty names when data is loading
   let displayCharts = $derived(
     charts.length > 0
       ? charts
       : placeholders.map(placeholder => {
           const [name, override] = placeholder.split('|');
           return {
-            name: override || name,
+            name: override || '',
             chartData: []
           };
         })

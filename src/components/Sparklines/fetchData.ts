@@ -50,12 +50,17 @@ export async function fetchData({
   ]);
 
   const data = locations
-    // Resolve each location string (supports "Name|Display Override" syntax) to
+    // Resolve each location string (supports "BOMID|Display Override", "BOMID", or legacy "Name|Display Override") to
     // its matching GeoJSON feature so we can look up the Aurora station ID later.
     .map(location => {
-      const [name, override] = location.split('|');
-      const feature = geojson.features.find(f => f.properties.name === name);
-      return { feature, name: override || name };
+      const [identifier, override] = location.split('|');
+      const feature = geojson.features.find(
+        f => f.properties.bomId === identifier || f.properties.name === identifier
+      );
+      return {
+        feature,
+        name: override || feature?.properties.name || identifier
+      };
     })
 
     // Drop any locations that didn't match a feature in the GeoJSON.

@@ -6,6 +6,9 @@ export type LocationsFeatureCollection = FeatureCollection<
     name: string;
     auroraId: string;
     auroraName?: string;
+    bomId: string;
+    wmoId?: string;
+    metraId?: string;
     height?: number;
     colour?: string;
     temp?: number | null;

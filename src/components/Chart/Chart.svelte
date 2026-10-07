@@ -137,7 +137,8 @@
 <!-- svelte-ignore a11y_click_events_have_key_events -->
 <!-- svelte-ignore a11y_no_static_element_interactions -->
 <div class="chart" {onclick}>
-  <h2 class="chart__name">{name}</h2>
+  <!-- svelte-ignore a11y_hidden -->
+  <h2 class="chart__name" aria-hidden={!isReady ? 'true' : undefined}>{name || '\u00A0'}</h2>
   <p class="chart__description">{description}</p>
   <p class="chart__last-updated">
     &nbsp;
@@ -246,6 +247,7 @@
     font-style: normal;
     font-weight: 600;
     line-height: 135%;
+    min-height: 1.35em;
     margin-bottom: 1px;
   }
   .chart__description {

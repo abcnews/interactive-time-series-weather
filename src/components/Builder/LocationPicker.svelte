@@ -45,13 +45,13 @@
   });
   let displayItems = $derived.by(() => {
     return selectedValues.map(val => {
-      const [name, override] = val.split('|');
-      const option = values.find(v => v.value === name);
+      const [id, override] = val.split('|');
+      const option = values.find(v => v.value === id);
       return {
         originalValue: val,
-        name,
+        id,
         override,
-        label: override || option?.label || name
+        label: override || option?.label || id
       };
     });
   });
@@ -61,7 +61,8 @@
     if (newName === null) {
       return;
     }
-    const newValue = newName === '' || newName === item.label ? item.name : `${item.name}|${newName}`;
+    const option = values.find(v => v.value === item.id);
+    const newValue = newName === '' || newName === option?.label ? item.id : `${item.id}|${newName}`;
     selectedValues = selectedValues.map(v => (v === item.originalValue ? newValue : v));
     onChange(selectedValues);
   }

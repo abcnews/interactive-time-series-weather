@@ -12,14 +12,18 @@
   import Favicon from '../Favicon/Favicon.svelte';
   import { metricProperties } from '../../lib/chartTypes';
 
-  let locations = $state(
-    (
-      defaultParams.get('locations') ||
-      'Brisbane,Fort Denison,Melbourne Airport,Adelaide Airport,Perth Airport,Darwin Airport,Canberra Airport,Hobart (Ellerslie Road)'
-    )
-      .split(',')
-      .filter(Boolean)
-  );
+  const DEFAULT_BOM_IDS = [
+    '040913', // Brisbane
+    '066022', // Fort Denison (Sydney)
+    '086282', // Melbourne Airport
+    '023034', // Adelaide Airport
+    '009021', // Perth Airport
+    '014015', // Darwin Airport
+    '070351', // Canberra Airport
+    '094029' // Hobart (Ellerslie Road)
+  ];
+
+  let locations = $state((defaultParams.get('locations') || DEFAULT_BOM_IDS.join(',')).split(',').filter(Boolean));
   let vizType = $state(defaultParams.get('viz') || 'tempc');
   let hash = $state(window.location.hash.slice(1));
   let locationOptions = $state<{ value: string; label: string }[]>([]);
@@ -40,14 +44,28 @@
   });
 
   let validLocations = $derived(
-    locationOptions.length > 0
-      ? locations.filter(loc => locationOptions.some(opt => opt.value === loc.split('|')[0]))
+    locationOptions.length > 0 && geojson
+      ? locations
+          .map(loc => {
+            const [idOrName, override] = loc.split('|');
+            if (locationOptions.some(opt => opt.value === idOrName)) {
+              return loc;
+            }
+            const matchedFeature = geojson.features.find(
+              f => f.properties.name?.toLowerCase() === idOrName.toLowerCase()
+            );
+            if (matchedFeature?.properties.bomId) {
+              return override ? `${matchedFeature.properties.bomId}|${override}` : matchedFeature.properties.bomId;
+            }
+            return loc;
+          })
+          .filter(loc => locationOptions.some(opt => opt.value === loc.split('|')[0]))
       : locations
   );
 
   function bulkPasteLocations() {
     const input = prompt(
-      'Paste locations one per line (e.g. from a spreadsheet), or from a previous iframe url',
+      'Paste locations (BOM IDs or station names) one per line, or from a previous iframe url',
       locations.join('\n')
     );
     if (input === null) {
@@ -56,7 +74,17 @@
     locations = input
       .split('\n')
       .map(location => location.trim())
-      .filter(Boolean);
+      .filter(Boolean)
+      .map(loc => {
+        const [idOrName, override] = loc.split('|');
+        if (geojson?.features) {
+          const matched = geojson.features.find(f => f.properties.name?.toLowerCase() === idOrName.toLowerCase());
+          if (matched?.properties.bomId) {
+            return override ? `${matched.properties.bomId}|${override}` : matched.properties.bomId;
+          }
+        }
+        return loc;
+      });
   }
 
   function loadFromIframeUrl() {
@@ -93,8 +121,9 @@
 
       // Transform geojson features into Typeahead format
       locationOptions = geojson.features
+        .filter(feature => feature.properties.bomId)
         .map(feature => ({
-          value: feature.properties.name,
+          value: feature.properties.bomId,
           label: [feature.properties.name, feature.properties.auroraName && `(${feature.properties.auroraName})`]
             .filter(Boolean)
             .join(' ')
@@ -108,7 +137,7 @@
   });
 
   $effect(() => {
-    if (validLocations.length !== locations.length) {
+    if (validLocations.length !== locations.length || validLocations.some((loc, i) => loc !== locations[i])) {
       locations = validLocations;
       return;
     }

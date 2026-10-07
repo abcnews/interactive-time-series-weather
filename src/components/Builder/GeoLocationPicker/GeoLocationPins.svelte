@@ -12,7 +12,15 @@
     locations?: string[];
   }>();
 
-  const locationNames = $derived(locations.map(l => l.split('|')[0]));
+  const selectedBomIds = $derived(
+    locations.map(l => {
+      const identifier = l.split('|')[0];
+      const feature = geojson?.features?.find(
+        (f: any) => f.properties.bomId === identifier || f.properties.name === identifier
+      );
+      return feature?.properties?.bomId || identifier;
+    })
+  );
 
   const mapInstance = getContext<{ map: maplibregl.Map | undefined }>('mapInstance');
   const sourceId = 'geo-location-pins-source';
@@ -35,8 +43,8 @@
         geojson.features
           .filter(feature => feature.properties.auroraId)
           .sort((a, b) => {
-            const aMatch = locationNames.includes(a.properties.name);
-            const bMatch = locationNames.includes(b.properties.name);
+            const aMatch = selectedBomIds.includes(a.properties.bomId);
+            const bMatch = selectedBomIds.includes(b.properties.bomId);
             if (aMatch === bMatch) return 0;
             return aMatch ? 1 : -1;
           })
@@ -53,7 +61,7 @@
         source: sourceId,
         paint: {
           'circle-radius': 6,
-          'circle-color': untrack(() => ['case', ['in', ['get', 'name'], ['literal', locationNames]], 'green', '#ccc']),
+          'circle-color': untrack(() => ['case', ['in', ['get', 'bomId'], ['literal', selectedBomIds]], 'green', '#ccc']),
           'circle-stroke-width': 2,
           'circle-stroke-color': '#ffffff'
         }
@@ -62,9 +70,9 @@
       map.on('click', layerId, e => {
         const feature = e.features?.[0];
         if (!feature) return;
-        const { name, auroraName } = feature.properties;
+        const { name, auroraName, bomId } = feature.properties;
         const abcName = auroraName || name;
-        const isSelected = locationNames.includes(name);
+        const isSelected = selectedBomIds.includes(bomId);
 
         const popupNode = document.createElement('div');
         popupNode.innerHTML = `
@@ -74,6 +82,8 @@
                 <dd>${name}</dd>
                 <dt>ABC Location</dt>
                 <dd>${abcName}</dd>
+                <dt>BOM Station ID</dt>
+                <dd>${bomId}</dd>
               </dl>
               <label style="display: flex; align-items: center; gap: 5px; cursor: pointer; margin-top: 10px;">
                 <input type="checkbox" ${isSelected ? 'checked' : ''} />
@@ -86,9 +96,12 @@
         checkbox?.addEventListener('change', () => {
           let newLocations;
           if (checkbox.checked) {
-            newLocations = [...locations, name];
+            newLocations = [...locations, bomId];
           } else {
-            newLocations = locations.filter(l => l.split('|')[0] !== name);
+            newLocations = locations.filter(l => {
+              const id = l.split('|')[0];
+              return id !== bomId && id !== name;
+            });
           }
           if (onClick) {
             onClick(newLocations);
@@ -139,8 +152,8 @@
     const features = geojson.features
       .filter(feature => feature.properties.auroraId)
       .sort((a, b) => {
-        const aMatch = locationNames.includes(a.properties.name);
-        const bMatch = locationNames.includes(b.properties.name);
+        const aMatch = selectedBomIds.includes(a.properties.bomId);
+        const bMatch = selectedBomIds.includes(b.properties.bomId);
         if (aMatch === bMatch) return 0;
         return aMatch ? 1 : -1;
       });
@@ -151,7 +164,7 @@
     }
     map.setPaintProperty(layerId, 'circle-color', [
       'case',
-      ['in', ['get', 'name'], ['literal', locationNames]],
+      ['in', ['get', 'bomId'], ['literal', selectedBomIds]],
       '#B400F5',
       '#888'
     ]);
