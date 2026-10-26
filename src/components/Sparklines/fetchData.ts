@@ -55,11 +55,11 @@ export async function fetchData({
     .map(location => {
       const [identifier, override] = location.split('|');
       const feature = geojson.features.find(
-        f => f.properties.bomId === identifier || f.properties.name === identifier
+        f => f.properties.bomId === identifier || f.properties.storyLabName === identifier
       );
       return {
         feature,
-        name: override || feature?.properties.name || identifier
+        name: override || feature?.properties.storyLabName || identifier
       };
     })
 

@@ -16,7 +16,7 @@
     locations.map(l => {
       const identifier = l.split('|')[0];
       const feature = geojson?.features?.find(
-        (f: any) => f.properties.bomId === identifier || f.properties.name === identifier
+        (f: any) => f.properties.bomId === identifier || f.properties.storyLabName === identifier
       );
       return feature?.properties?.bomId || identifier;
     })
@@ -70,8 +70,7 @@
       map.on('click', layerId, e => {
         const feature = e.features?.[0];
         if (!feature) return;
-        const { name, auroraName, bomId } = feature.properties;
-        const abcName = auroraName || name;
+        const { storyLabName, bomId } = feature.properties;
         const isSelected = selectedBomIds.includes(bomId);
 
         const popupNode = document.createElement('div');
@@ -79,9 +78,7 @@
             <div style="color: #333;">
               <dl>
                 <dt>Weather station</dt>
-                <dd>${name}</dd>
-                <dt>ABC Location</dt>
-                <dd>${abcName}</dd>
+                <dd>${storyLabName}</dd>
                 <dt>BOM Station ID</dt>
                 <dd>${bomId}</dd>
               </dl>
@@ -100,7 +97,7 @@
           } else {
             newLocations = locations.filter(l => {
               const id = l.split('|')[0];
-              return id !== bomId && id !== name;
+              return id !== bomId && id !== storyLabName;
             });
           }
           if (onClick) {

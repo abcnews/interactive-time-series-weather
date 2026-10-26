@@ -1,6 +1,6 @@
 <script lang="ts">
   import { BuilderStyleRoot, BuilderFrame, UpdateChecker, Typeahead, Loader } from '@abcnews/components-builder';
-  import { onMount } from 'svelte';
+  import { onMount, tick } from 'svelte';
   import { LOCATIONS_URL } from '../../lib/util';
   import Sparklines from '../Sparklines/Sparklines.svelte';
   import LocationPicker from './LocationPicker.svelte';
@@ -23,18 +23,30 @@
     '094029' // Hobart (Ellerslie Road)
   ];
 
-  let locations = $state((defaultParams.get('locations') || DEFAULT_BOM_IDS.join(',')).split(',').filter(Boolean));
+  const defaultStartDate = () => new Date(Date.now() - 1000 * 60 * 60 * 24 * 5).toISOString().substring(0, 10);
+  const defaultEndDate = () => new Date().toISOString().substring(0, 10);
+
+  /** An explicit empty `locations=` (after "Clear all") must stay empty, so only fall back to defaults when absent */
+  const locationsFromParams = (params: URLSearchParams) =>
+    (params.has('locations') ? params.get('locations')! : DEFAULT_BOM_IDS.join(',')).split(',').filter(Boolean);
+
+  let locations = $state(locationsFromParams(defaultParams));
   let vizType = $state(defaultParams.get('viz') || 'tempc');
   let hash = $state(window.location.hash.slice(1));
   let locationOptions = $state<{ value: string; label: string }[]>([]);
   let isLoading = $state(true);
-  let startDate = $state(
-    defaultParams.get('startDate') || new Date(Date.now() - 1000 * 60 * 60 * 24 * 5).toISOString().substring(0, 10)
-  );
-  let endDate = $state(defaultParams.get('endDate') || new Date().toISOString().substring(0, 10));
+  let startDate = $state(defaultParams.get('startDate') || defaultStartDate());
+  let endDate = $state(defaultParams.get('endDate') || defaultEndDate());
   let scheme = $state(defaultParams.get('scheme') || 'auto');
   let isTwoColumn = $state(defaultParams.get('columns') !== '1');
   let geojson = $state();
+
+  /**
+   * True while state is being restored from the url (back/forward). Any normalisation write that follows must
+   * replace the history entry, otherwise the back button would get stuck re-pushing the entry we just left.
+   */
+  let isReplacingHistory = false;
+  let hasWrittenHash = false;
   let daysDifference = $derived.by(() => {
     if (!startDate || !endDate) return 0;
     const start = new Date(startDate);
@@ -43,49 +55,24 @@
     return Math.ceil(diffTime / (1000 * 60 * 60 * 24));
   });
 
+  /** Legacy urls use station names (`Whyalla Aero|Whyalla`) rather than BOM IDs (`018120|Whyalla`); convert to the ID form */
+  function resolveLocation(loc: string) {
+    const [idOrName, override] = loc.split('|');
+    const bomId = geojson?.features.find(f => f.properties.storyLabName?.toLowerCase() === idOrName.toLowerCase())
+      ?.properties.bomId;
+    if (!bomId) {
+      return loc;
+    }
+    return override ? `${bomId}|${override}` : bomId;
+  }
+
   let validLocations = $derived(
     locationOptions.length > 0 && geojson
-      ? locations
-          .map(loc => {
-            const [idOrName, override] = loc.split('|');
-            if (locationOptions.some(opt => opt.value === idOrName)) {
-              return loc;
-            }
-            const matchedFeature = geojson.features.find(
-              f => f.properties.name?.toLowerCase() === idOrName.toLowerCase()
-            );
-            if (matchedFeature?.properties.bomId) {
-              return override ? `${matchedFeature.properties.bomId}|${override}` : matchedFeature.properties.bomId;
-            }
-            return loc;
-          })
-          .filter(loc => locationOptions.some(opt => opt.value === loc.split('|')[0]))
+      ? locations.map(resolveLocation).filter(loc => locationOptions.some(opt => opt.value === loc.split('|')[0]))
       : locations
   );
 
-  function bulkPasteLocations() {
-    const input = prompt(
-      'Paste locations (BOM IDs or station names) one per line, or from a previous iframe url',
-      locations.join('\n')
-    );
-    if (input === null) {
-      return;
-    }
-    locations = input
-      .split('\n')
-      .map(location => location.trim())
-      .filter(Boolean)
-      .map(loc => {
-        const [idOrName, override] = loc.split('|');
-        if (geojson?.features) {
-          const matched = geojson.features.find(f => f.properties.name?.toLowerCase() === idOrName.toLowerCase());
-          if (matched?.properties.bomId) {
-            return override ? `${matched.properties.bomId}|${override}` : matched.properties.bomId;
-          }
-        }
-        return loc;
-      });
-  }
+  const serialiseHash = (params: URLSearchParams) => params.toString().replace(/%7C/g, '|').replace(/%2C/g, ',');
 
   function loadFromIframeUrl() {
     const input = prompt('Paste an iframe URL to load its settings');
@@ -93,27 +80,51 @@
     if (!input || !search) {
       return;
     }
-    window.location.hash = search;
-    window.location.reload();
+    const params = new URLSearchParams(search);
+    // Supports both current (BOM ID) and legacy (station name) locations
+    if (params.has('locations')) {
+      params.set('locations', params.get('locations')!.split(',').filter(Boolean).map(resolveLocation).join());
+    }
+    params.delete('abcnewsembedheight');
+    // The hashchange handler applies the new settings
+    window.location.hash = serialiseHash(params);
+  }
+
+  /** Restores builder state from url params (used for back/forward navigation) */
+  function applyParams(params: URLSearchParams) {
+    const nextLocations = locationsFromParams(params);
+    if (nextLocations.join() !== locations.join()) {
+      locations = nextLocations;
+    }
+    vizType = params.get('viz') || 'tempc';
+    startDate = params.get('startDate') || defaultStartDate();
+    endDate = params.get('endDate') || defaultEndDate();
+    scheme = params.get('scheme') || 'auto';
+    isTwoColumn = params.get('columns') !== '1';
+  }
+
+  async function onHashChange() {
+    const newHash = window.location.hash.slice(1);
+    if (hash === newHash) {
+      return;
+    }
+    hash = newHash;
+    isReplacingHistory = true;
+    applyParams(new URLSearchParams(newHash));
+    await tick();
+    isReplacingHistory = false;
   }
 
   $effect(() => {
     if (!startDate) {
-      startDate = new Date(Date.now() - 1000 * 60 * 60 * 24 * 5).toISOString().slice(0, 10);
+      startDate = defaultStartDate();
     }
     if (!endDate) {
-      endDate = new Date(Date.now()).toISOString().slice(0, 10);
+      endDate = defaultEndDate();
     }
   });
 
   onMount(async () => {
-    addEventListener('hashchange', () => {
-      const newHash = window.location.hash.slice(1);
-      if (hash !== newHash) {
-        hash = newHash;
-      }
-    });
-
     // Fetch locations data
     try {
       const response = await fetch(LOCATIONS_URL);
@@ -124,9 +135,7 @@
         .filter(feature => feature.properties.bomId)
         .map(feature => ({
           value: feature.properties.bomId,
-          label: [feature.properties.name, feature.properties.auroraName && `(${feature.properties.auroraName})`]
-            .filter(Boolean)
-            .join(' ')
+          label: feature.properties.storyLabName
         }))
         .sort((a, b) => a.label.localeCompare(b.label));
     } catch (error) {
@@ -153,7 +162,19 @@
     if (!isTwoColumn) {
       params.append('columns', '1');
     }
-    window.location.hash = params.toString().replace(/%7C/g, '|').replace(/%2C/g, ',');
+    const nextHash = serialiseHash(params);
+    if (nextHash === window.location.hash.slice(1)) {
+      hasWrittenHash = true;
+      return;
+    }
+    hash = nextHash;
+    // The first write only normalises the initial url, so it shouldn't add a history entry either
+    if (isReplacingHistory || !hasWrittenHash) {
+      history.replaceState(null, '', `#${nextHash}`);
+    } else {
+      window.location.hash = nextHash;
+    }
+    hasWrittenHash = true;
   });
 
   let iframeUrl = $derived.by(
@@ -231,22 +252,12 @@
   </fieldset>
   <fieldset>
     <legend>Locations</legend>
-    <small>
-      Note that not all locations will have data. The builder doesn't let you rearrange locations, but you can edit the
-      URL and refresh the page. <br /> <br /> Locations are in <code>Weather Station (Aurora Location)</code> format. You
-      can rename them with the edit button.
-    </small>
+    <small> Not all locations will have data. You can rename them with the edit button. </small>
     {#if isLoading}
       <Loader />
     {:else}
-      <LocationPicker
-        disabled={isLoading}
-        values={locationOptions}
-        value={locations}
-        onChange={newLocations => {
-          locations = newLocations;
-        }}
-      />
+      <LocationPicker disabled={isLoading} values={locationOptions} bind:value={locations} {geojson} />
+      <button disabled={locations.length === 0} onclick={() => (locations = [])}>Clear all</button>
     {/if}
   </fieldset>
   <fieldset>
@@ -294,7 +305,6 @@
   </fieldset>
   <fieldset>
     <legend>Tools</legend>
-    <button onclick={bulkPasteLocations}>Bulk paste locations</button>
     <button onclick={loadFromIframeUrl}>Load from iframe URL</button>
     <GeoLocationPicker {geojson} onClick={newLocations => (locations = newLocations)} {locations} />
     <button onclick={csvExport}>Export as CSV</button>
@@ -302,6 +312,7 @@
   <UpdateChecker />
 {/snippet}
 
+<svelte:window onhashchange={onHashChange} />
 <Favicon url={faviconUrl} />
 <BuilderStyleRoot>
   <BuilderFrame {Viz} {Sidebar} />

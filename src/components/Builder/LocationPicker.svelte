@@ -1,14 +1,12 @@
 <script lang="ts">
-  /**
-   * Copypasta of builder-components typeahead because we need to add more buttons
-   */
-  import { untrack } from 'svelte';
+  import { Typeahead } from '@abcnews/components-builder';
+  import type { LocationsFeatureCollection } from '../../types';
 
   let {
     values = [],
-    value = [],
+    value = $bindable([]),
     disabled,
-    onChange = () => {}
+    geojson
   }: {
     values: {
       value: string;
@@ -16,210 +14,90 @@
     }[];
     value: string[];
     disabled: boolean;
-    onChange?: (val: string[]) => void;
+    /** Locations feature collection, used to look up each station's coordinates */
+    geojson?: LocationsFeatureCollection;
   } = $props();
 
-  const uniqueId = 'list' + (Math.random() * 10e15).toString(16);
-  let selectedValues = $state<string[]>(untrack(() => value));
-  let isFocused = $state(false);
-  let inputElement = $state<HTMLInputElement>();
-  let inputValue = $state('');
-
-  function getValueFromLabel(label: string) {
-    const foundValue = values.find(value => value.label === label);
-    return foundValue;
-  }
-  $effect(() => {
-    const foundValue = getValueFromLabel(inputValue);
-    if (!foundValue) {
+  /** Google Maps search url for a station's point, or undefined if it has no coordinates */
+  function mapUrl(bomId: string) {
+    const geometry = geojson?.features.find(f => f.properties.bomId === bomId)?.geometry;
+    if (geometry?.type !== 'Point') {
       return;
     }
-    untrack(() => {
-      selectedValues = Array.from(new Set([...selectedValues, foundValue.value]));
-      inputValue = '';
-      onChange(selectedValues);
-    });
-  });
-  $effect(() => {
-    selectedValues = value;
-  });
-  let displayItems = $derived.by(() => {
-    return selectedValues.map(val => {
-      const [id, override] = val.split('|');
-      const option = values.find(v => v.value === id);
-      return {
-        originalValue: val,
-        id,
-        override,
-        label: override || option?.label || id
-      };
-    });
-  });
+    const [longitude, latitude] = geometry.coordinates;
+    return `https://www.google.com/maps/search/?api=1&query=${latitude},${longitude}`;
+  }
 
-  function rename(item: (typeof displayItems)[number]) {
-    const newName = prompt(`Rename ${item.label}`, item.label);
+  /**
+   * Stored values are `bomId` or `bomId|Custom name`. A custom name only changes how the location
+   * is labelled in the charts; reverting to the station's default name drops the override.
+   */
+  function rename(storedValue: string, setValue: (newValue: string) => void) {
+    const [id, override] = storedValue.split('|');
+    const defaultLabel = values.find(v => v.value === id)?.label;
+    const currentLabel = override || defaultLabel || id;
+    const newName = prompt(`Rename ${currentLabel}`, currentLabel);
     if (newName === null) {
       return;
     }
-    const option = values.find(v => v.value === item.id);
-    const newValue = newName === '' || newName === option?.label ? item.id : `${item.id}|${newName}`;
-    selectedValues = selectedValues.map(v => (v === item.originalValue ? newValue : v));
-    onChange(selectedValues);
+    setValue(newName === '' || newName === defaultLabel ? id : `${id}|${newName}`);
   }
 </script>
 
-<!-- this interaction is supplementary to the input element, so it's not an accessibility issue -->
-<!-- svelte-ignore a11y_click_events_have_key_events -->
-<!-- svelte-ignore a11y_no_static_element_interactions -->
-<div
-  class="typeahead"
-  class:typeahead--focused={isFocused}
-  class:typeahead--disabled={disabled}
-  onclick={e => inputElement?.focus()}
->
-  <input
-    class="typeahead__input"
-    {disabled}
-    bind:this={inputElement}
-    bind:value={inputValue}
-    list={uniqueId}
-    onfocus={() => {
-      isFocused = true;
-    }}
-    onblur={() => {
-      isFocused = false;
-    }}
-  />
-  <ul class="typeahead__selected-items">
-    {#each displayItems as item}
-      <!-- svelte-ignore a11y_no_noninteractive_element_interactions -->
-      <li class="typeahead__selected-item" onclick={e => e.stopPropagation()}>
-        <div class="typeahead__selected-item-text">
-          {item.label}
-        </div>
+<!-- Each location gets its own full-width row -->
+<div class="location-picker">
+  <Typeahead {values} bind:value {disabled}>
+    {#snippet item({ value: storedValue, setValue, remove })}
+      {@const [id, override] = storedValue.split('|')}
+      {@const label = override || values.find(v => v.value === id)?.label || id}
+      {@const url = mapUrl(id)}
+      <div class="label">{label}</div>
+      {#if url}
         <button
-          aria-label={`Rename ${item.label}`}
-          title={`Rename ${item.label}`}
-          class="typeahead__selected-item-butt"
-          onclick={e => {
-            e.preventDefault();
-            rename(item);
-          }}
+          aria-label={`Open ${label} in Google Maps`}
+          title={`Open ${label} in Google Maps`}
+          onclick={() => window.open(url, '_blank', 'noopener,noreferrer')}
         >
-          <svg
-            xmlns="http://www.w3.org/2000/svg"
-            width="16"
-            height="16"
-            fill="currentColor"
-            class="bi bi-pencil-square"
-            viewBox="0 0 16 16"
-          >
+          <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" fill="currentColor" viewBox="0 0 16 16">
             <path
-              d="M15.502 1.94a.5.5 0 0 1 0 .706L14.459 3.69l-2-2L13.502.646a.5.5 0 0 1 .707 0l1.293 1.293zm-1.75 2.456-2-2L4.939 9.21a.5.5 0 0 0-.12 1.196l-.805 2.414a.25.25 0 0 0 .316.316l2.414-.805a.5.5 0 0 0 .196-.12l6.813-6.814z"
-            />
-            <path
-              fill-rule="evenodd"
-              d="M1 13.5A1.5 1.5 0 0 0 2.5 15h11a1.5 1.5 0 0 0 1.5-1.5v-6a.5.5 0 0 0-1 0v6a.5.5 0 0 1-.5.5h-11a.5.5 0 0 1-.5-.5v-11a.5.5 0 0 1 .5-.5H9a.5.5 0 0 0 0-1H2.5A1.5 1.5 0 0 0 1 2.5z"
+              d="M3 2.5A1.5 1.5 0 0 1 4.5 1h1A1.5 1.5 0 0 1 7 2.5V5h2V2.5A1.5 1.5 0 0 1 10.5 1h1A1.5 1.5 0 0 1 13 2.5v2.382a.5.5 0 0 0 .276.447l.895.447A1.5 1.5 0 0 1 15 7.118V14.5a1.5 1.5 0 0 1-1.5 1.5h-3A1.5 1.5 0 0 1 9 14.5v-3a.5.5 0 0 1 .146-.354l.854-.853V9.5a.5.5 0 0 0-.5-.5h-3a.5.5 0 0 0-.5.5v.793l.854.853A.5.5 0 0 1 7 11.5v3A1.5 1.5 0 0 1 5.5 16h-3A1.5 1.5 0 0 1 1 14.5V7.118a1.5 1.5 0 0 1 .83-1.342l.894-.447A.5.5 0 0 0 3 4.882zM4.5 2a.5.5 0 0 0-.5.5V3h2v-.5a.5.5 0 0 0-.5-.5zM6 4H4v.882a1.5 1.5 0 0 1-.83 1.342l-.894.447A.5.5 0 0 0 2 7.118V13h4v-1.293l-.854-.853A.5.5 0 0 1 5 10.5v-1A1.5 1.5 0 0 1 6.5 8h3A1.5 1.5 0 0 1 11 9.5v1a.5.5 0 0 1-.146.354l-.854.853V13h4V7.118a.5.5 0 0 0-.276-.447l-.895-.447A1.5 1.5 0 0 1 12 4.882V4h-2v1.5a.5.5 0 0 1-.5.5h-3a.5.5 0 0 1-.5-.5zm4-1h2v-.5a.5.5 0 0 0-.5-.5h-1a.5.5 0 0 0-.5.5zm4 11h-4v.5a.5.5 0 0 0 .5.5h3a.5.5 0 0 0 .5-.5zm-8 0H2v.5a.5.5 0 0 0 .5.5h3a.5.5 0 0 0 .5-.5z"
             />
           </svg>
         </button>
-        <button
-          class="typeahead__selected-item-butt"
-          aria-label={`Remove ${item.label}`}
-          title={`Remove ${item.label}`}
-          onclick={e => {
-            e.preventDefault();
-            selectedValues = selectedValues.filter(thisValue => thisValue !== item.originalValue);
-            onChange(selectedValues);
-          }}
-          ><svg
-            xmlns="http://www.w3.org/2000/svg"
-            width="16"
-            height="16"
-            fill="currentColor"
-            class="bi bi-x-lg"
-            viewBox="0 0 16 16"
-          >
-            <path
-              d="M2.146 2.854a.5.5 0 1 1 .708-.708L8 7.293l5.146-5.147a.5.5 0 0 1 .708.708L8.707 8l5.147 5.146a.5.5 0 0 1-.708.708L8 8.707l-5.146 5.147a.5.5 0 0 1-.708-.708L7.293 8z"
-            />
-          </svg></button
-        >
-      </li>
-    {/each}
-  </ul>
+      {/if}
+      <button aria-label={`Rename ${label}`} title={`Rename ${label}`} onclick={() => rename(storedValue, setValue)}>
+        <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" fill="currentColor" viewBox="0 0 16 16">
+          <path
+            d="M15.502 1.94a.5.5 0 0 1 0 .706L14.459 3.69l-2-2L13.502.646a.5.5 0 0 1 .707 0l1.293 1.293zm-1.75 2.456-2-2L4.939 9.21a.5.5 0 0 0-.12 1.196l-.805 2.414a.25.25 0 0 0 .316.316l2.414-.805a.5.5 0 0 0 .196-.12l6.813-6.814z"
+          />
+          <path
+            fill-rule="evenodd"
+            d="M1 13.5A1.5 1.5 0 0 0 2.5 15h11a1.5 1.5 0 0 0 1.5-1.5v-6a.5.5 0 0 0-1 0v6a.5.5 0 0 1-.5.5h-11a.5.5 0 0 1-.5-.5v-11a.5.5 0 0 1 .5-.5H9a.5.5 0 0 0 0-1H2.5A1.5 1.5 0 0 0 1 2.5z"
+          />
+        </svg>
+      </button>
+      <button aria-label={`Remove ${label}`} title={`Remove ${label}`} onclick={remove}>✕</button>
+    {/snippet}
+  </Typeahead>
 </div>
-<datalist id={uniqueId}>
-  {#each values as value}
-    <option value={value.label}></option>
-  {/each}
-</datalist>
 
 <style>
-  .typeahead {
-    padding: 0.25rem 0.5rem;
-    background: var(--background);
-    color: var(--text);
-    border: 1px solid var(--border);
-    border-radius: 0.2rem;
+  .location-picker {
+    --typeahead-item-flex: 1 1 100%;
+    --typeahead-items-max-height: 24rem;
   }
-  .typeahead--focused {
-    outline: 2px solid Highlight;
+  .label {
+    flex: 1;
   }
-  .typeahead--disabled {
-    background: transparent;
-    cursor: not-allowed;
-  }
-  .typeahead--disabled * {
-    pointer-events: none;
-  }
-  ul,
-  li {
-    list-style: none;
-    margin: 0;
-    padding: 0;
-  }
-
-  .typeahead input.typeahead__input {
-    border: none;
-    outline: none;
-    width: 100%;
-    padding: 0.25rem 0;
-    background: transparent;
-    color: var(--c-black);
-  }
-
-  .typeahead__selected-items {
-    display: flex;
-    gap: 0.25rem;
-    flex-wrap: wrap;
-    max-height: 6rem;
-    overflow: auto;
-  }
-  .typeahead__selected-item {
-    background: var(--background);
-    color: var(--text);
-    border: 1px solid var(--border);
-    border-radius: 0.2rem;
-    position: relative;
-    padding: 0.25rem;
-    display: inline-flex;
-    flex-direction: row;
-    font-size: 0.75rem;
-    .typeahead__selected-item-butt {
-      padding: 0;
-      height: 100%;
-      width: 1.25rem;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      border: none;
-    }
-  }
-
-  .typeahead__selected-item-text {
+  /* Fixed square so the icons keep their proportions inside the flex row */
+  .location-picker button {
     display: inline-flex;
     align-items: center;
     justify-content: center;
+    flex-shrink: 0;
+    width: 1.5rem;
+    height: 1.5rem;
+    padding: 0;
+    border: none;
   }
 </style>

@@ -3,9 +3,9 @@ import type { FeatureCollection, Geometry } from 'geojson';
 export type LocationsFeatureCollection = FeatureCollection<
   Geometry,
   {
-    name: string;
+    /** Canonical place name; the source of truth for all display names */
+    storyLabName: string;
     auroraId: string;
-    auroraName?: string;
     bomId: string;
     wmoId?: string;
     metraId?: string;

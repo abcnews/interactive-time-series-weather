@@ -40,7 +40,7 @@
   "dependencies": {
     "@abcnews/alternating-case-to-object": "^3.2.0",
     "@abcnews/aunty": "^17.0.0-next.10",
-    "@abcnews/components-builder": "^0.0.20",
+    "@abcnews/components-builder": "^2.0.0",
     "@abcnews/components-storylab": "^0.3.1",
     "@abcnews/env-utils": "^6.0.0",
     "@abcnews/mount-utils": "^3.0.0",
