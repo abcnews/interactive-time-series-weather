@@ -13,7 +13,7 @@ whenDOMReady.then(async () => {
   if (sparklineMountEl) {
     const params = new URLSearchParams(location.search);
     const vizType = params.get('viz') || '';
-    const locationParams = params.get('locations') || 'Brisbane,Sydney,Melbourne,Adelaide';
+    const locationParams = params.get('locations') || '040913,066022,086282,023034';
     const locations = locationParams.split(',');
     const startDate = params.get('startDate') || '';
     const endDate = params.get('endDate') || '';

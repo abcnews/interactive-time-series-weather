@@ -1,115 +1,94 @@
-import type { LocationsFeatureCollection, TimeSeriesData } from '../../types';
-import { metricProperties } from '../../lib/chartTypes';
-import { blockingFetch, LOCATIONS_URL } from '../../lib/util';
-/**
- * Data is chunked by day, so when we fetch a date range we must fetch the file
- * for each day individually. For perf reasons let's not select more than 2 wks.
- * @param dataBaseUrl - the base url for the files. Files are YYYY-MM-DD.json
- * @returns
- */
-async function fetchChunkedData(dataBaseUrl: string, { startDate = '', endDate = '' }) {
-  const distanceDays = (Number(new Date(endDate)) - Number(new Date(startDate))) / 1000 / 60 / 60 / 24;
-  const filenames = Array.from({ length: distanceDays + 1 })
-    .map((_, i) => new Date(Number(new Date(startDate)) + i * 24 * 60 * 60 * 1000))
-    .map(date => `${date.toISOString().slice(0, 10)}`);
+import type { LocationsFeatureCollection, StationDayData } from '../../types';
+import { metricProperties, type MetricType } from '../../lib/chartTypes';
+import { LOCATIONS_URL } from '../../lib/util';
 
-  const urls = filenames.map(filename => `${dataBaseUrl}/${filename}.json`);
+const DAY_MS = 24 * 60 * 60 * 1000;
+const BOM_ID = /^\d+$/;
 
-  const datasets = await Promise.all(
-    urls.map(url =>
-      blockingFetch(url)
-        .then(async res => {
-          const ret = await res.json();
-          return ret;
-        })
-        .catch(e => {
-          return null;
-        })
-    )
+/** Every YYYY-MM-DD from startDate to endDate, inclusive */
+function getDatesInRange({ startDate = '', endDate = '' }) {
+  const dayCount = (Number(new Date(endDate)) - Number(new Date(startDate))) / DAY_MS + 1;
+  return Array.from({ length: Math.max(dayCount, 0) }, (_, i) =>
+    new Date(Number(new Date(startDate)) + i * DAY_MS).toISOString().slice(0, 10)
   );
-
-  return datasets;
 }
 
 /**
- * Fetch data for the given baseUrl and date range.
+ * Locations are "BOMID|Display Override" or "BOMID". Legacy embeds use station names
+ * ("Whyalla Aero|Whyalla"), which we can only map to a BOM ID with the locations file,
+ * so it's fetched only when a name is present. Names that match no station are dropped.
+ */
+async function resolveLocations(locations: string[]) {
+  const parsed = locations.map(location => {
+    const [identifier = '', override] = location.split('|');
+    return { identifier, override };
+  });
+
+  const geojson = parsed.every(({ identifier }) => BOM_ID.test(identifier))
+    ? undefined
+    : await fetch(LOCATIONS_URL).then(res => res.json() as Promise<LocationsFeatureCollection>);
+
+  return parsed.flatMap(({ identifier, override }) => {
+    const bomId = BOM_ID.test(identifier)
+      ? identifier
+      : geojson?.features.find(f => f.properties.storyLabName === identifier)?.properties.bomId;
+    return bomId ? [{ bomId, override }] : [];
+  });
+}
+
+/**
+ * Each station has one tiny file per day: `<dataUrl>/<YYYY-MM-DD>/<bomId>.json`.
+ * Days without a file (not generated yet, or before we started recording) come back as null.
+ */
+function fetchStationDay(dataUrl: string, bomId: string, date: string): Promise<StationDayData | null> {
+  return fetch(`${dataUrl}/${date}/${bomId}.json`)
+    .then(res => (res.ok ? (res.json() as Promise<StationDayData>) : null))
+    .catch(() => null);
+}
+
+/**
+ * Fetch data for the given locations and date range. Every station-day file is
+ * requested in parallel; they're small and the browser caches them.
  */
 export async function fetchData({
   locations,
   range = { startDate: '2026-01-01', endDate: '2026-01-07' },
-  metric = ''
+  metric
+}: {
+  locations: string[];
+  range?: { startDate?: string; endDate?: string };
+  metric: MetricType;
 }): Promise<Array<{ name: string; chartData: Array<{ x: number; y: number }> }>> {
-  const props = metricProperties[metric];
-  const { dataUrl = '', parseValue = (num: number) => num } = props;
-  if (!dataUrl) {
-    throw new Error(`baseUrl missing for metric "${metric}"`);
-  }
-  const [geojson, datasets] = await Promise.all([
-    blockingFetch(LOCATIONS_URL).then(res => res.json() as Promise<LocationsFeatureCollection>),
-    fetchChunkedData(dataUrl, range)
-  ]);
+  const { dataUrl, parseValue = (num: number) => num } = metricProperties[metric];
+  const dates = getDatesInRange(range);
 
-  const data = locations
-    // Resolve each location string (supports "BOMID|Display Override", "BOMID", or legacy "Name|Display Override") to
-    // its matching GeoJSON feature so we can look up the Aurora station ID later.
-    .map(location => {
-      const [identifier, override] = location.split('|');
-      const feature = geojson.features.find(
-        f => f.properties.bomId === identifier || f.properties.storyLabName === identifier
-      );
-      return {
-        feature,
-        name: override || feature?.properties.storyLabName || identifier
-      };
-    })
+  return Promise.all(
+    (await resolveLocations(locations)).map(async ({ bomId, override }) => {
+      const days = await Promise.all(dates.map(date => fetchStationDay(dataUrl, bomId, date)));
+      const availableDays = days.filter(day => day !== null);
 
-    // Drop any locations that didn't match a feature in the GeoJSON.
-    .filter(({ feature }) => !!feature)
-
-    // Transform multiple daily datasets into a single flat {x, y}[] array
-    // suitable for charting, where x is a Unix timestamp (ms) and y is the
-    // parsed observation value.
-    .map(({ feature, name }) => {
-      const auroraId = feature!.properties.auroraId;
-
-      const chartData: { x: number; y: number }[] = [];
+      // Transform the daily files into a single flat {x, y}[] array suitable for
+      // charting, where x is a Unix timestamp (ms) and y is the parsed observation value.
       let runningTotal = 0;
-      datasets.forEach(dataset => {
-        // Skip days where the fetch failed (null returned by fetchChunkedData).
-        if (!dataset) return;
+      const chartData = availableDays.flatMap(({ startDate, series }) =>
+        // Each value is [offsetMinutes, reading] — convert the offset to an absolute timestamp
+        series.map(([offsetMinutes, value]) => {
+          const x = Number(new Date(startDate)) + offsetMinutes * 60 * 1000;
+          const y = typeof value === 'number' ? parseValue(value) : value;
 
-        const values = dataset.series[auroraId];
-        const startDate = new Date(dataset.startDate);
-
-        // Each value is [offsetMinutes, reading] — convert the offset to an
-        // absolute timestamp and apply any caller-supplied value transform.
-        values?.forEach(([offsetMinutes, value]) => {
-          const thisDate = new Date(Number(startDate) + offsetMinutes * 60 * 1000);
-          const parsedValue = typeof value === 'number' ? parseValue(value) : value;
-
-          if (metric === 'rainCumulative' && typeof parsedValue === 'number') {
-            runningTotal += parsedValue;
-            chartData.push({
-              x: thisDate.getTime(),
-              y: runningTotal
-            });
-          } else {
-            chartData.push({
-              x: thisDate.getTime(),
-              y: parsedValue
-            });
+          if (metric === 'rainCumulative' && typeof y === 'number') {
+            runningTotal += y;
+            return { x, y: runningTotal };
           }
-        });
-      });
+          return { x, y };
+        })
+      );
 
-      // Sort accurately by timestamp to handle any out-of-order points or boundary leaks
-      // and remove any exact duplicates to keep the line clean.
-      const sortedData = chartData
-        .sort((a, b) => a.x - b.x)
-        .filter((d, i, arr) => i === 0 || d.x !== arr[i - 1].x);
+      // Sort by timestamp to handle any out-of-order points or boundary leaks,
+      // and remove exact duplicates to keep the line clean.
+      const sortedData = chartData.sort((a, b) => a.x - b.x).filter((d, i, arr) => i === 0 || d.x !== arr[i - 1].x);
 
-      return { name, chartData: sortedData };
-    });
-
-  return data;
+      return { name: override || availableDays[0]?.name || bomId, chartData: sortedData };
+    })
+  );
 }

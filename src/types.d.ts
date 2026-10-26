@@ -16,12 +16,15 @@ export type LocationsFeatureCollection = FeatureCollection<
 >;
 
 /**
- * Represents time series data for weather observations.
+ * One station's observations for one day, from `<dataUrl>/<YYYY-MM-DD>/<bomId>.json`.
  */
-export type TimeSeriesData = {
+export type StationDayData = {
+  name: string;
   updatedDate: string;
+  /** Start of the day, ISO 8601. Each point's minute offset is from here */
   startDate: string;
-  series: Record<string, Array<[number, any]>>;
+  /** [minutes since startDate, observation value] */
+  series: Array<[number, number]>;
 };
 
 // Weather Chart Data Models
