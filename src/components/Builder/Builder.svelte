@@ -6,6 +6,8 @@
   import LocationPicker from './LocationPicker.svelte';
   import GeoLocationPicker from './GeoLocationPicker/GeoLocationPicker.svelte';
   import { rawData } from '../Chart/lib/stores';
+  import { provideDataStatus } from '../SparklineViz/dataStatus.svelte';
+  import { DATA_START } from '../Sparklines/fetchData';
   const defaultParams = new URLSearchParams(location.hash.slice(1));
   // Initialize dynamic favicon
   import faviconUrl from './favicon.svg';
@@ -29,6 +31,9 @@
   /** An explicit empty `locations=` (after "Clear all") must stay empty, so only fall back to defaults when absent */
   const locationsFromParams = (params: URLSearchParams) =>
     (params.has('locations') ? params.get('locations')! : DEFAULT_BOM_IDS.join(',')).split(',').filter(Boolean);
+
+  // What the chart below was made from, reported by its SparklineViz via context
+  const dataStatus = provideDataStatus();
 
   let locations = $state(locationsFromParams(defaultParams));
   let vizType = $state(defaultParams.get('viz') || 'tempc');
@@ -273,6 +278,20 @@
     {#if daysDifference > 14}
       <small class="warning">
         ⚠️ Warning: Date range is &gt;2 weeks. Large date ranges cause slow loading and excessive data transfers.
+      </small>
+    {/if}
+    {#if dataStatus.usedHistorical}
+      <small class="warning">
+        ⚠️ Dates before {DATA_START} use Bureau of Meteorology daily data (one point per day), and BOM attribution is
+        added to the chart.
+      </small>
+    {/if}
+    {#if dataStatus.hasMissingData}
+      <small class="warning">
+        ⚠️ Some BOM data is missing for these locations. The line is broken at missing days{metricProperties[vizType]
+          ?.aggregate === 'cumulative'
+          ? ', which are left out of the running total'
+          : ''}.
       </small>
     {/if}
   </fieldset>

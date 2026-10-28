@@ -45,8 +45,26 @@ export type LocationType = {
   observations: ObservationType[];
 };
 
+/** Which sources made it onto the chart; drives attribution and the Builder's warnings. */
+export type DataStatus = {
+  /** False when none of the data came from the live source, so the live source isn't credited. */
+  usedLive: boolean;
+  usedHistorical: boolean;
+  /** Historical data had days with no reading */
+  hasMissingData: boolean;
+};
+
 // Available Chart Metrics
 export type MetricType = 'gust' | 'rainSince9am' | 'humidity' | 'tempc' | 'rainCumulative';
+
+/**
+ * Daily BOM data covering the period before our own high-res data starts (`DATA_START`).
+ * One file per station at `<url>/<bomId>.json`; `field` is the key holding `{ [year]: daily values }`.
+ */
+export type HistoricalSource = {
+  url: string;
+  field: string;
+};
 
 export type MetricProps = {
   name: string;
@@ -54,6 +72,10 @@ export type MetricProps = {
   parseValue?: (value: number) => number;
   formatValue: (value: number) => string;
   dataUrl: string;
+  /** 'cumulative' turns each reading into a running total across the whole range. Absent = plot values as-is. */
+  aggregate?: 'cumulative';
+  /** Absent = live data only */
+  historical?: HistoricalSource;
   attribution: string;
   colour: string;
   darkColour: string;

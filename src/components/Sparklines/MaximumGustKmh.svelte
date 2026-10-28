@@ -18,7 +18,7 @@
   {twoColumns}
   placeholders={locations}
   loadData={async () => {
-    const charts = await fetchData({
+    const { charts } = await fetchData({
       metric: 'gust',
       locations,
       range: { startDate, endDate }

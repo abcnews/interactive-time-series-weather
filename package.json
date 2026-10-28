@@ -25,7 +25,8 @@
   "scripts": {
     "start": "vite dev",
     "dev": "vite dev",
-    "build": "vite build"
+    "build": "vite build",
+    "test": "vitest run"
   },
   "devDependencies": {
     "@sveltejs/vite-plugin-svelte": "^7.0.0",
@@ -35,7 +36,8 @@
     "svelte": "^5.53.12",
     "svelte-check": "^4.4.5",
     "typescript": "~5.9.3",
-    "vite": "^8.0.1"
+    "vite": "^8.0.1",
+    "vitest": "^4.0.0"
   },
   "dependencies": {
     "@abcnews/alternating-case-to-object": "^3.2.0",

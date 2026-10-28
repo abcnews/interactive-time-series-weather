@@ -1,11 +1,14 @@
 <script lang="ts">
+  import ABCAttribution from '../ABCAttribution/ABCAttribution.svelte';
   import Chart from '../Chart/Chart.svelte';
   import { intersectionObserver } from './useIntersectionObserver.js';
   import { emitResize } from '../../lib/util';
   import { calculateDomain } from '../Chart/lib/utils';
-  import { untrack } from 'svelte';
+  import { untrack, type Snippet } from 'svelte';
   import { extentStores, rawData } from '../Chart/lib/stores';
+  import { DEFAULT_DATA_STATUS, getDataStatusReporter } from './dataStatus.svelte';
   import type { MetricType } from '../../lib/chartTypes';
+  import type { DataStatus } from '../../types';
 
   /**
    * Props for the SparklineViz component.
@@ -37,6 +40,8 @@
       colour?: string;
       /** Optional override for dark mode solid colour */
       darkColour?: string;
+      /** Which sources the data came from. Without it, live data is assumed and `attribution` is shown. */
+      status?: DataStatus;
     }>;
 
     /**
@@ -72,6 +77,10 @@
      * Free text attribution to display below the charts.
      */
     attribution?: string;
+    /**
+     * Extra attribution (e.g. links) appended to the same line as `attribution`. Receives the loaded data's status.
+     */
+    attributionExtra?: Snippet<[DataStatus]>;
     /**
      * Optional hard minimum limit for y-axis.
      */
@@ -109,6 +118,7 @@
     colour: colourProp,
     darkColour: darkColourProp,
     attribution,
+    attributionExtra,
     yMin,
     yMax,
     name,
@@ -210,6 +220,9 @@
   let clientHeight = $state(0);
   let status = $state('offscreen');
 
+  let dataStatus = $state<DataStatus>({ ...DEFAULT_DATA_STATUS });
+  const reportDataStatus = getDataStatusReporter();
+
   // Store overrides from loadData
   let overrides = $state<{
     yDomain?: [number, number];
@@ -248,6 +261,8 @@
         const result = await loadData();
         charts = result.charts;
         $rawData = charts;
+        dataStatus = result.status ?? { ...DEFAULT_DATA_STATUS };
+        reportDataStatus(dataStatus);
 
         // Store overrides from the result
         overrides = {
@@ -292,9 +307,7 @@
     {/each}
   </div>
   {#if attribution}
-    <div>
-      <p class="attribution">{attribution}</p>
-    </div>
+    <ABCAttribution>{#if dataStatus.usedLive}{attribution}{/if} {@render attributionExtra?.(dataStatus)}</ABCAttribution>
   {/if}
 </div>
 
@@ -355,12 +368,5 @@
     .charts.is-two-column {
       grid-template-columns: 1fr 1fr;
     }
-  }
-
-  .attribution {
-    font-size: 12px;
-    font-style: normal;
-    font-weight: 400;
-    line-height: 135%; /* 16.2px */
   }
 </style>

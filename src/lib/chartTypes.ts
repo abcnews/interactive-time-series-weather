@@ -43,6 +43,11 @@ export const metricProperties: Record<MetricType, MetricProps> = {
     name: 'Rainfall',
     editorialNotes: 'Rainfall accumulates over the duration of the chart.',
     dataUrl: BASE_URL + '/assets/stations/rainfallSpot',
+    aggregate: 'cumulative',
+    historical: {
+      url: 'https://abcnewsdata.sgp1.digitaloceanspaces.com/data-bom-weather-historical/rainfall',
+      field: 'rainMm'
+    },
     formatValue: (v: number) => `${v.toFixed(1)} mm`,
     attribution: METRAWEATHER_ATTR,
     colour: '#007BC7',
