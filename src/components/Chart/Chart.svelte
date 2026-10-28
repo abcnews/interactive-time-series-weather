@@ -24,6 +24,8 @@
   interface DataPoint {
     x: number;
     y: number;
+    /** True when data is missing between the previous point and this one. The line (and area) break here. */
+    gapBefore?: boolean;
   }
 
   interface Props {
@@ -47,6 +49,11 @@
     colour?: string;
     /** The height of the chart in pixels. Defaults to 150. */
     height?: number;
+    /**
+     * Show only the maximum value label, not the most recent one.
+     * Intended for monotonic series (e.g. cumulative totals) where the max is the latest value.
+     */
+    showMaxOnly?: boolean;
   }
 
   let {
@@ -67,7 +74,8 @@
     yDomain,
     xDomain,
     colour,
-    height = 150
+    height = 150,
+    showMaxOnly = false
   }: Props = $props();
 
   const padding = { top: 2.5, right: 2.5, bottom: 25 };
@@ -82,10 +90,15 @@
   let maxValue = $derived(Math.max(...values));
 
   // Calculate primary and secondary data points
-  let primaryPoint = $derived(data.length > 0 ? data.reduce((max, d) => (d.y > max.y ? d : max), data[0]) : null);
+  // With showMaxOnly, ties go to the latest point so a flat tail (e.g. a dry spell in a cumulative total)
+  // keeps the label at the end of the line rather than where the max was first reached.
+  let primaryPoint = $derived(
+    data.length > 0 ? data.reduce((max, d) => ((showMaxOnly ? d.y >= max.y : d.y > max.y) ? d : max), data[0]) : null
+  );
   let secondaryPoint = $derived(data.length > 0 ? data[data.length - 1] : null);
   let hideSecondaryLabel = $derived(
-    primaryPoint && secondaryPoint && Math.abs(data.indexOf(primaryPoint) - data.indexOf(secondaryPoint)) < 6
+    showMaxOnly ||
+      (primaryPoint && secondaryPoint && Math.abs(data.indexOf(primaryPoint) - data.indexOf(secondaryPoint)) < 6)
   );
 
   let isActiveObservation = $derived($activeObservation !== null && data.includes($activeObservation as any));
@@ -130,7 +143,6 @@
       });
     }
   });
-
 </script>
 
 <!-- This is a bubbled click handler to remove labels for touch events that have suitable alt text in the Observations <ol> -->
@@ -144,13 +156,7 @@
     &nbsp;
     {#if lastUpdated}Last updated {formatTime(lastUpdated)}{/if}
   </p>
-  <div
-    role="figure"
-    class="chart__figure"
-    class:is-ready={isReady}
-    style:height="{height}px"
-    aria-label={altText}
-  >
+  <div role="figure" class="chart__figure" class:is-ready={isReady} style:height="{height}px" aria-label={altText}>
     {#if data.length > 0}
       <LayerCake
         {data}
@@ -175,11 +181,7 @@
           />
 
           {#if !isActiveObservation && primaryPoint}
-            <ValueLabel
-              class="label-maximum"
-              data={primaryPoint}
-              value={formatValue(primaryPoint.y)}
-            />
+            <ValueLabel class="label-maximum" data={primaryPoint} value={formatValue(primaryPoint.y)} />
             {#if secondaryPoint && !hideSecondaryLabel && secondaryPoint !== primaryPoint}
               <ValueLabel
                 class="label-most-recent"

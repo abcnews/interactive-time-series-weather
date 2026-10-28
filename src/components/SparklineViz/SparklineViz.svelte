@@ -92,6 +92,12 @@
      * @default true
      */
     twoColumns?: boolean;
+
+    /**
+     * Show only the maximum value label on each chart (no separate "most recent" label).
+     * @default false
+     */
+    showMaxOnly?: boolean;
   }
 
   let {
@@ -106,7 +112,8 @@
     yMin,
     yMax,
     name,
-    twoColumns = true
+    twoColumns = true,
+    showMaxOnly = false
   }: SparklineVizProps = $props();
 
   // Internal utility for synchronizing domains across instances
@@ -278,6 +285,7 @@
           {formatValue}
           {yDomain}
           {xDomain}
+          {showMaxOnly}
           colour="var(--weather-viz-metric-colour)"
         />
       </div>

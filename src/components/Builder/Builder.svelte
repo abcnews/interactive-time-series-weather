@@ -272,7 +272,7 @@
     </label>
     {#if daysDifference > 14}
       <small class="warning">
-        ⚠️ Warning: Date range is &gt;2 weeks. Large date ranges will cause slow loading and excessive data transfers.
+        ⚠️ Warning: Date range is &gt;2 weeks. Large date ranges cause slow loading and excessive data transfers.
       </small>
     {/if}
   </fieldset>

@@ -5,8 +5,11 @@ import { LOCATIONS_URL } from '../../lib/util';
 const DAY_MS = 24 * 60 * 60 * 1000;
 const BOM_ID = /^\d+$/;
 
+/** We have no high-res data of any metric before this date (YYYY-MM-DD). */
+export const DATA_START = '2026-09-28';
+
 /** Every YYYY-MM-DD from startDate to endDate, inclusive */
-function getDatesInRange({ startDate = '', endDate = '' }) {
+export function getDatesInRange({ startDate = '', endDate = '' }) {
   const dayCount = (Number(new Date(endDate)) - Number(new Date(startDate))) / DAY_MS + 1;
   return Array.from({ length: Math.max(dayCount, 0) }, (_, i) =>
     new Date(Number(new Date(startDate)) + i * DAY_MS).toISOString().slice(0, 10)
@@ -18,7 +21,7 @@ function getDatesInRange({ startDate = '', endDate = '' }) {
  * ("Whyalla Aero|Whyalla"), which we can only map to a BOM ID with the locations file,
  * so it's fetched only when a name is present. Names that match no station are dropped.
  */
-async function resolveLocations(locations: string[]) {
+export async function resolveLocations(locations: string[]) {
   const parsed = locations.map(location => {
     const [identifier = '', override] = location.split('|');
     return { identifier, override };
@@ -53,14 +56,18 @@ function fetchStationDay(dataUrl: string, bomId: string, date: string): Promise<
 export async function fetchData({
   locations,
   range = { startDate: '2026-01-01', endDate: '2026-01-07' },
-  metric
+  metric,
+  initialTotals = {}
 }: {
   locations: string[];
   range?: { startDate?: string; endDate?: string };
   metric: MetricType;
+  /** Starting value of the rainCumulative running total, keyed by BOM ID (e.g. rain that fell before `range`). */
+  initialTotals?: Record<string, number>;
 }): Promise<Array<{ name: string; chartData: Array<{ x: number; y: number }> }>> {
   const { dataUrl, parseValue = (num: number) => num } = metricProperties[metric];
-  const dates = getDatesInRange(range);
+  // Hard clamp (all metrics): never request days before we started recording
+  const dates = getDatesInRange(range).filter(date => date >= DATA_START);
 
   return Promise.all(
     (await resolveLocations(locations)).map(async ({ bomId, override }) => {
@@ -69,7 +76,7 @@ export async function fetchData({
 
       // Transform the daily files into a single flat {x, y}[] array suitable for
       // charting, where x is a Unix timestamp (ms) and y is the parsed observation value.
-      let runningTotal = 0;
+      let runningTotal = initialTotals[bomId] ?? 0;
       const chartData = availableDays.flatMap(({ startDate, series }) =>
         // Each value is [offsetMinutes, reading] — convert the offset to an absolute timestamp
         series.map(([offsetMinutes, value]) => {
