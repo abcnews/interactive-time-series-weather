@@ -4,11 +4,20 @@ import { LOCATIONS_URL } from '../../lib/util';
 
 const DAY_MS = 24 * 60 * 60 * 1000;
 const BOM_ID = /^\d+$/;
+// AEST is a fixed UTC+10 (no daylight saving), applied to a UTC-midnight date
+const MIDDAY_AEST_OFFSET_MS = 2 * 60 * 60 * 1000;
+const MIDNIGHT_AEST_OFFSET_MS = -10 * 60 * 60 * 1000;
 
 /** We have no high-res data of any metric before this date (YYYY-MM-DD). */
 export const DATA_START = '2026-09-28';
 
-export type Point = { x: number; y: number; gapBefore?: boolean };
+export type Point = {
+  x: number;
+  y: number;
+  gapBefore?: boolean;
+  /** Set on daily max/min points, whose x is a placeholder time. The tooltip shows this date and kind instead of a time. */
+  dailySummary?: { date: string; kind: 'max' | 'min' };
+};
 export type Chart = { name: string; chartData: Point[] };
 type DateRange = { startDate?: string; endDate?: string };
 type DailyByYear = Record<string, Array<number | null>>;
@@ -146,11 +155,17 @@ export function firstRecordDate(dailyByYear: DailyByYear): string | null {
 export function buildHistoricalPoints({
   dailyByYear,
   dates,
-  aggregate
+  aggregate,
+  xOffsetMs = DAY_MS / 2,
+  summaryKind
 }: {
   dailyByYear: DailyByYear;
   dates: string[];
   aggregate?: 'cumulative';
+  /** Where in the (UTC) day to plot each point. Defaults to midday UTC. */
+  xOffsetMs?: number;
+  /** Tags each point as a daily max or min so the tooltip can describe it without a (made-up) time. */
+  summaryKind?: 'max' | 'min';
 }) {
   const firstRecord = firstRecordDate(dailyByYear);
   const recordedDates = firstRecord ? dates.filter(date => date >= firstRecord) : [];
@@ -167,8 +182,9 @@ export function buildHistoricalPoints({
       acc.total = Math.round((acc.total + value) * 10) / 10; // BOM is 0.1 precision; avoid float drift
       // Break the line after missing days (no break if nothing has been plotted yet)
       acc.chartData.push({
-        x: Date.parse(date) + DAY_MS / 2,
+        x: Date.parse(date) + xOffsetMs,
         y: aggregate === 'cumulative' ? acc.total : value,
+        ...(summaryKind ? { dailySummary: { date, kind: summaryKind } } : {}),
         ...(acc.pendingGap && acc.chartData.length > 0 ? { gapBefore: true } : {})
       });
       acc.pendingGap = false;
@@ -200,9 +216,39 @@ async function fetchHistoricalStation({
     return { chartData: [] as Point[], total: 0, missing: [] as string[], endsWithGap: false, name: null };
   }
 
-  const dailyByYear = (file[historical.field] ?? {}) as DailyByYear;
+  const rawByYear = (file[historical.field] ?? {}) as Record<string, Array<number | null | Array<number | null>>>;
   const name = typeof file.storyLabName === 'string' ? file.storyLabName : null;
-  return { ...buildHistoricalPoints({ dailyByYear, dates, aggregate }), name };
+
+  if (!historical.maxMinPair) {
+    return { ...buildHistoricalPoints({ dailyByYear: rawByYear as DailyByYear, dates, aggregate }), name };
+  }
+
+  // Each day is [max, min]. Plot the max at midday and the min at midnight (start of that day), AEST,
+  // mirroring the daily peaks the live data injects. Many stations record no minimum, so only the
+  // max series decides what counts as a missing day and where lines break.
+  const pickElement = (index: number): DailyByYear =>
+    Object.fromEntries(
+      Object.entries(rawByYear).map(([year, days]) => [
+        year,
+        days.map(day => (Array.isArray(day) ? (day[index] ?? null) : null))
+      ])
+    );
+  const max = buildHistoricalPoints({
+    dailyByYear: pickElement(0),
+    dates,
+    xOffsetMs: MIDDAY_AEST_OFFSET_MS,
+    summaryKind: 'max'
+  });
+  const min = buildHistoricalPoints({
+    dailyByYear: pickElement(1),
+    dates,
+    xOffsetMs: MIDNIGHT_AEST_OFFSET_MS,
+    summaryKind: 'min'
+  });
+  const chartData = [...max.chartData, ...min.chartData.map(({ x, y, dailySummary }) => ({ x, y, dailySummary }))].sort(
+    (a, b) => a.x - b.x
+  );
+  return { ...max, chartData, name };
 }
 
 // ---------------------------------------------------------------------------

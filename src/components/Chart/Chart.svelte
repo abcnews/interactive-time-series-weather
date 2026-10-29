@@ -26,6 +26,8 @@
     y: number;
     /** True when data is missing between the previous point and this one. The line (and area) break here. */
     gapBefore?: boolean;
+    /** Daily max/min from historical data. Its x is a placeholder time, so the tooltip shows the date and kind only. */
+    dailySummary?: { date: string; kind: 'max' | 'min' };
   }
 
   interface Props {
@@ -63,6 +65,14 @@
     data,
     formatValue = (v: number) => `${v}`,
     formatTime = (d: DataPoint) => {
+      // Daily summaries are dated, not timed. Parse as UTC so the viewer's timezone can't shift the day.
+      if (d.dailySummary) {
+        return new Date(`${d.dailySummary.date}T00:00:00Z`).toLocaleDateString(undefined, {
+          day: 'numeric',
+          month: 'short',
+          timeZone: 'UTC'
+        });
+      }
       const date = new Date(d.x);
       return date.toLocaleString(undefined, {
         day: 'numeric',
@@ -207,7 +217,9 @@
               <ActiveTooltip
                 class="active-tooltip"
                 data={activeDataPoint}
-                value={formatValue(activeDataPoint.y)}
+                value={activeDataPoint.dailySummary
+                  ? `${activeDataPoint.dailySummary.kind === 'max' ? 'Max' : 'Min'} ${formatValue(activeDataPoint.y)}`
+                  : formatValue(activeDataPoint.y)}
                 timeDisplay={formatTime(activeDataPoint)}
               />
             </div>

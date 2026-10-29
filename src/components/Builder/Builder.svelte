@@ -282,8 +282,14 @@
     {/if}
     {#if dataStatus.usedHistorical}
       <small class="warning">
-        ⚠️ Dates before {DATA_START} use Bureau of Meteorology daily data (one point per day), and BOM attribution is
-        added to the chart.
+        {#if metricProperties[vizType]?.historical?.maxMinPair}
+          ⚠️ Dates before {DATA_START} use Bureau of Meteorology daily data (a maximum and minimum per day), and BOM
+          attribution is added to the chart. Maximums are plotted at midday and minimums at midnight (AEST). These
+          times do not match when the temperatures actually occurred.
+        {:else}
+          ⚠️ Dates before {DATA_START} use Bureau of Meteorology daily data (one point per day), and BOM attribution is
+          added to the chart.
+        {/if}
       </small>
     {/if}
     {#if dataStatus.hasMissingData}

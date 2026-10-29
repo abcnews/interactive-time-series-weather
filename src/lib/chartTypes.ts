@@ -58,6 +58,11 @@ export const metricProperties: Record<MetricType, MetricProps> = {
     name: 'Temperature (degrees celsius)',
     editorialNotes: ``,
     dataUrl: BASE_URL + '/assets/stations/tempC',
+    historical: {
+      url: 'https://abcnewsdata.sgp1.digitaloceanspaces.com/data-bom-weather-historical/tempc',
+      field: 'tempC',
+      maxMinPair: true
+    },
     formatValue: (v: number) => `${v.toFixed(1)}°C`,
     attribution: METRAWEATHER_ATTR,
     colour: '#A61268',

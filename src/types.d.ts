@@ -64,6 +64,8 @@ export type MetricType = 'gust' | 'rainSince9am' | 'humidity' | 'tempc' | 'rainC
 export type HistoricalSource = {
   url: string;
   field: string;
+  /** Each day is a `[max, min]` pair (temperature). Both are plotted: max at midday AEST, min at midnight AEST. */
+  maxMinPair?: boolean;
 };
 
 export type MetricProps = {
