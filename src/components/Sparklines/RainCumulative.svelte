@@ -1,5 +1,6 @@
 <script lang="ts">
   import SparklineViz from '../SparklineViz/SparklineViz.svelte';
+  import BomAttribution from '../BomAttribution/BomAttribution.svelte';
   import { fetchData } from './fetchData';
   import { metricProperties } from '../../lib/chartTypes';
 
@@ -14,12 +15,7 @@
 </script>
 
 {#snippet bomAttribution({ usedHistorical })}
-  {#if usedHistorical}
-    Rainfall data: © <a href="https://www.bom.gov.au/">Bureau of Meteorology</a>, from
-    <a href="https://www.bom.gov.au/climate/data/">CDO</a>.
-    <a href="https://creativecommons.org/licenses/by/4.0/">CC BY 4.0</a>. Cumulative totals were calculated, provided
-    without warranties of any kind.
-  {/if}
+  {#if usedHistorical}<BomAttribution note="Cumulative totals were calculated." />{/if}
 {/snippet}
 
 <SparklineViz

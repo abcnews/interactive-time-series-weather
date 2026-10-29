@@ -1,5 +1,5 @@
 <script lang="ts">
-  import ABCAttribution from '../ABCAttribution/ABCAttribution.svelte';
+  import { FigureCaption } from '@abcnews/components-storylab';
   import Chart from '../Chart/Chart.svelte';
   import { intersectionObserver } from './useIntersectionObserver.js';
   import { emitResize } from '../../lib/util';
@@ -307,7 +307,7 @@
     {/each}
   </div>
   {#if attribution}
-    <ABCAttribution>{#if dataStatus.usedLive}{attribution}{/if} {@render attributionExtra?.(dataStatus)}</ABCAttribution>
+    <FigureCaption>{#if dataStatus.usedLive}{attribution}{/if} {@render attributionExtra?.(dataStatus)}</FigureCaption>
   {/if}
 </div>
 
