@@ -16,7 +16,7 @@
 
   const DEFAULT_BOM_IDS = [
     '040913', // Brisbane
-    '066022', // Fort Denison (Sydney)
+    '066214', // Sydney - Observatory Hill
     '086282', // Melbourne Airport
     '023034', // Adelaide Airport
     '009021', // Perth Airport
@@ -283,12 +283,12 @@
     {#if dataStatus.usedHistorical}
       <small class="warning">
         {#if metricProperties[vizType]?.historical?.maxMinPair}
-          ⚠️ Dates before {DATA_START} use Bureau of Meteorology daily data (a maximum and minimum per day), and BOM
-          attribution is added to the chart. Maximums are plotted at midday and minimums at midnight (AEST). These
-          times do not match when the temperatures actually occurred.
+          ⚠️ Dates before {DATA_START} use Bureau of Meteorology daily data (a maximum and minimum per day), and BOM attribution
+          is added to the chart. Maximums are plotted at midday and minimums at midnight (AEST). These times do not match
+          when the temperatures actually occurred.
         {:else}
-          ⚠️ Dates before {DATA_START} use Bureau of Meteorology daily data (one point per day), and BOM attribution is
-          added to the chart.
+          ⚠️ Dates before {DATA_START} use Bureau of Meteorology daily data (one point per day), and BOM attribution is added
+          to the chart.
         {/if}
       </small>
     {/if}
